@@ -1,16 +1,100 @@
-# React + Vite
+# SNSR AI Chat
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern AI-powered chat application with real-time conversations, user authentication, and email verification.
 
-Currently, two official plugins are available:
+![SNSR AI](public/logo.svg)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Features
 
-## React Compiler
+- 🤖 **AI Chat** - Powered by snsrLM (Gemini API)
+- 🔐 **User Authentication** - Secure signup/login with JWT
+- 📧 **Email Verification** - OTP-based verification via Brevo
+- 💬 **Chat History** - Save and retrieve conversations
+- 🎨 **Modern UI** - Dark theme with glassmorphism effects
+- 📱 **Responsive Design** - Works on all devices
+- 📋 **Code Blocks** - Syntax highlighting with copy button
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tech Stack
 
-## Expanding the ESLint configuration
+**Frontend:**
+- React 18 + Vite
+- Axios for API calls
+- Lucide React icons
+- React Markdown
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+**Backend:**
+- Node.js + Express
+- MongoDB Atlas
+- JWT Authentication
+- Brevo Email API
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+
+- MongoDB Atlas account
+- Brevo account (for email verification)
+- Google AI API key
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/itzSNSR/SNSR-Chat.git
+cd SNSR-Chat
+```
+
+2. Install frontend dependencies:
+```bash
+npm install
+```
+
+3. Install backend dependencies:
+```bash
+cd server
+npm install
+```
+
+4. Configure environment variables:
+```bash
+# Copy the example file
+cp server/.env.example server/.env
+
+# Edit server/.env with your API keys
+```
+
+5. Start the backend server:
+```bash
+cd server
+npm run dev
+```
+
+6. Start the frontend (new terminal):
+```bash
+npm run dev
+```
+
+7. Open http://localhost:5173 in your browser
+
+## 📁 Project Structure
+
+```
+SNSR-Chat/
+├── public/              # Static assets
+├── src/
+│   ├── components/      # React components
+│   └── services/        # API services
+├── server/
+│   ├── models/          # MongoDB models
+│   ├── routes/          # API routes
+│   └── services/        # Backend services
+└── README.md
+```
+
+## 👨‍💻 Author
+
+**Sabarinadh S R**
+
+## 📄 License
+
+This project is open source and available under the MIT License.
