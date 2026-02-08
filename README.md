@@ -6,7 +6,7 @@ A modern AI-powered chat application with real-time conversations, user authenti
 
 ## ✨ Features
 
-- 🤖 **AI Chat** - Powered by snsrLM (Gemini API)
+- 🤖 **AI Chat** - Powered by snsrLM (API Based)
 - 🔐 **User Authentication** - Secure signup/login with JWT
 - 📧 **Email Verification** - OTP-based verification via Brevo
 - 💬 **Chat History** - Save and retrieve conversations
