@@ -44,7 +44,7 @@ export const chatAPI = {
 
 // Gemini API (through backend proxy)
 export const geminiAPI = {
-    generate: (prompt, model) => api.post('/api/gemini/generate', { prompt, model })
+    generate: (prompt, model, history = []) => api.post('/api/gemini/generate', { prompt, model, history })
 };
 
 // Helper functions

@@ -1,0 +1,139 @@
+/* Error Message Component */
+.error-message-row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) 0;
+    animation: errorFadeIn 0.3s ease-out;
+}
+
+@keyframes errorFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.error-message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.error-message-avatar .avatar-logo {
+    width: 20px;
+    height: 20px;
+    opacity: 0.6;
+}
+
+.error-message-container {
+    flex: 1;
+    max-width: 520px;
+}
+
+.error-message-card {
+    background: linear-gradient(135deg, rgba(251, 146, 60, 0.08) 0%, rgba(239, 68, 68, 0.05) 100%);
+    border: 1px solid rgba(251, 146, 60, 0.25);
+    border-radius: 12px;
+    padding: 16px 20px;
+}
+
+.error-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.error-icon-wrapper {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(251, 146, 60, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fb923c;
+}
+
+.error-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #fdba74;
+}
+
+.error-description {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0 0 8px 0;
+}
+
+.error-hint {
+    font-size: 0.8rem;
+    color: rgba(251, 146, 60, 0.7);
+    margin: 0 0 12px 0;
+    font-style: italic;
+}
+
+.error-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.error-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.error-btn.primary {
+    background: rgba(251, 146, 60, 0.15);
+    border: 1px solid rgba(251, 146, 60, 0.3);
+    color: #fb923c;
+}
+
+.error-btn.primary:hover {
+    background: rgba(251, 146, 60, 0.25);
+    border-color: rgba(251, 146, 60, 0.5);
+    transform: translateY(-1px);
+}
+
+.error-btn.secondary {
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+}
+
+.error-btn.secondary:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+}
+
+/* Spinning animation for retry button when active */
+.error-btn.primary svg {
+    transition: transform 0.3s ease;
+}
+
+.error-btn.primary:active svg {
+    transform: rotate(180deg);
+}

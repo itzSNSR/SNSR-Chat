@@ -81,3 +81,37 @@
     padding-top: var(--spacing-sm);
     opacity: 0.6;
 }
+
+/* Speech Recognition Styles */
+.chat-input-wrapper.listening {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2), 0 0 20px rgba(139, 92, 246, 0.1);
+}
+
+.input-action-btn.mic-active {
+    color: var(--error);
+    background-color: rgba(239, 68, 68, 0.1);
+    animation: pulse 1.5s infinite;
+}
+
+.input-action-btn.mic-active:hover {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: var(--error);
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    }
+
+    70% {
+        transform: scale(1.1);
+        box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+    }
+
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}

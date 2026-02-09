@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     MessageSquare,
     Search,
@@ -7,7 +7,14 @@ import {
     ChevronLeft,
     ChevronRight,
     LogOut,
-    User
+    LogIn,
+    User,
+    HelpCircle,
+    FileText,
+    Shield,
+    Bug,
+    Download,
+    Box
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -19,8 +26,13 @@ const Sidebar = ({
     onNewChat,
     onSelectChat,
     currentChatId,
-    onLogout
+    onLogout,
+    onOpenAuth,
+    onExploreCafe
 }) => {
+    const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
+    const [showHelpSubmenu, setShowHelpSubmenu] = useState(false);
+
     return (
         <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
             <div className="sidebar-header">
@@ -47,6 +59,11 @@ const Sidebar = ({
                 {!isCollapsed && <span>New Chat</span>}
             </button>
 
+            <button className="explore-cafe-btn" onClick={onExploreCafe}>
+                <Box size={18} />
+                {!isCollapsed && <span>Explore CHAT Cafe</span>}
+            </button>
+
             <nav className="sidebar-nav">
                 {!isCollapsed && <div className="nav-label">Recent Chats</div>}
 
@@ -70,21 +87,100 @@ const Sidebar = ({
             </nav>
 
             <div className="sidebar-footer">
+                {/* Settings Button */}
+                <div className="settings-section">
+                    <button
+                        className="settings-trigger"
+                        onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
+                        title="Settings"
+                    >
+                        <Settings size={18} />
+                        {!isCollapsed && <span>Settings</span>}
+                    </button>
+
+                    {showSettingsDropdown && !isCollapsed && (
+                        <div className="sidebar-settings-dropdown">
+                            {/* Sign in / Logout */}
+                            {user ? (
+                                <button
+                                    className="sidebar-settings-item"
+                                    onClick={() => {
+                                        onLogout();
+                                        setShowSettingsDropdown(false);
+                                    }}
+                                >
+                                    <LogOut size={16} />
+                                    <span>Log out</span>
+                                </button>
+                            ) : (
+                                <button
+                                    className="sidebar-settings-item"
+                                    onClick={() => {
+                                        onOpenAuth();
+                                        setShowSettingsDropdown(false);
+                                    }}
+                                >
+                                    <LogIn size={16} />
+                                    <span>Sign in</span>
+                                </button>
+                            )}
+
+                            {/* Help submenu */}
+                            <div
+                                className="sidebar-settings-item has-submenu"
+                                onMouseEnter={() => setShowHelpSubmenu(true)}
+                                onMouseLeave={() => setShowHelpSubmenu(false)}
+                            >
+                                <HelpCircle size={16} />
+                                <span>Help</span>
+                                <ChevronRight size={14} className="submenu-arrow" />
+
+                                {showHelpSubmenu && (
+                                    <div className="sidebar-help-submenu">
+                                        <a href="/contact-us.html" target="_blank" rel="noopener noreferrer" className="sidebar-settings-item">
+                                            <MessageSquare size={14} />
+                                            <span>Contact Us</span>
+                                        </a>
+                                        <a href="https://github.com/itzSNSR/SNSR-Chat/releases" target="_blank" rel="noopener noreferrer" className="sidebar-settings-item">
+                                            <FileText size={14} />
+                                            <span>Release notes</span>
+                                        </a>
+                                        <a
+                                            href="/privacy-policy.html"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="sidebar-settings-item"
+                                            onClick={() => setShowSettingsDropdown(false)}
+                                        >
+                                            <Shield size={14} />
+                                            <span>Privacy Policy</span>
+                                        </a>
+                                        <a href="https://github.com/itzSNSR/SNSR-Chat/issues" target="_blank" rel="noopener noreferrer" className="sidebar-settings-item">
+                                            <Bug size={14} />
+                                            <span>Report Bug</span>
+                                        </a>
+                                        <a href="https://github.com/itzSNSR/SNSR-Chat" target="_blank" rel="noopener noreferrer" className="sidebar-settings-item">
+                                            <Download size={14} />
+                                            <span>Download apps</span>
+                                        </a>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* User Profile */}
                 {user ? (
                     <div className="user-profile">
                         <div className="user-avatar">
                             <User size={18} />
                         </div>
                         {!isCollapsed && (
-                            <>
-                                <div className="user-info">
-                                    <span className="user-name">{user.fullName}</span>
-                                    <span className="user-email">{user.email}</span>
-                                </div>
-                                <button className="logout-btn" onClick={onLogout} title="Logout">
-                                    <LogOut size={16} />
-                                </button>
-                            </>
+                            <div className="user-info">
+                                <span className="user-name">{user.fullName}</span>
+                                <span className="user-email">{user.email}</span>
+                            </div>
                         )}
                     </div>
                 ) : (
