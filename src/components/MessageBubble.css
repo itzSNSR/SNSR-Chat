@@ -240,3 +240,55 @@
     font-size: 0.7rem;
     color: var(--accent-primary);
 }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .message-row {
+        padding: 0 var(--spacing-xs);
+        gap: var(--spacing-sm);
+    }
+
+    .message-container {
+        max-width: 90%;
+    }
+
+    .message-avatar {
+        width: 28px;
+        height: 28px;
+    }
+
+    .avatar-logo {
+        width: 16px;
+        height: 16px;
+    }
+
+    .message-bubble {
+        font-size: 0.9rem;
+        padding: var(--spacing-xs) var(--spacing-sm);
+    }
+
+    .message-bubble .md-h1 {
+        font-size: 1.3rem;
+    }
+
+    .message-bubble .md-h2 {
+        font-size: 1.15rem;
+    }
+
+    .message-bubble .md-h3 {
+        font-size: 1rem;
+    }
+
+    .code-block-code {
+        font-size: 0.8rem;
+    }
+
+    .code-block-pre {
+        padding: var(--spacing-sm);
+    }
+
+    /* Always show message actions on touch devices */
+    .message-actions {
+        opacity: 1;
+    }
+}

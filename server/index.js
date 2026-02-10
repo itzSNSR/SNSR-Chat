@@ -18,9 +18,9 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: true, // Allow all origins for simplicity in this setup
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+    origin: '*', // Allow all origins for local development (mobile testing)
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
@@ -73,7 +73,15 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'SNSR AI Server Running' });
 });
 
-// Export app for Vercel
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}
+
+// For Vercel Serverless
 export default app;
 
 // Start server if running locally (not in Vercel)

@@ -105,3 +105,32 @@
     color: var(--text-secondary);
     line-height: 1.4;
 }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .welcome-container {
+        padding: var(--spacing-md);
+    }
+
+    .welcome-header h1 {
+        font-size: 1.75rem;
+    }
+
+    .welcome-header p {
+        font-size: 0.95rem;
+    }
+
+    .app-logo {
+        width: 48px;
+        height: 48px;
+    }
+
+    .suggestions-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+
+    .suggestion-card {
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+}

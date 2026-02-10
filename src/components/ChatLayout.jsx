@@ -22,6 +22,7 @@ const ChatLayout = () => {
     const [messages, setMessages] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
     const [selectedModel, setSelectedModel] = useState(MODELS[0].id);
     const [showModelDropdown, setShowModelDropdown] = useState(false);
     const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
@@ -206,17 +207,24 @@ const ChatLayout = () => {
 
     return (
         <div className="chat-layout">
+            {/* Mobile sidebar overlay */}
+            <div
+                className={`sidebar-overlay ${mobileSidebarOpen ? 'visible' : ''}`}
+                onClick={() => setMobileSidebarOpen(false)}
+            />
             <Sidebar
                 isCollapsed={isSidebarCollapsed}
                 toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                mobileSidebarOpen={mobileSidebarOpen}
+                closeMobileSidebar={() => setMobileSidebarOpen(false)}
                 user={user}
                 chatHistory={chatHistory}
-                onNewChat={() => { startNewChat(); setShowChatCafe(false); }}
-                onSelectChat={(chatId) => { loadChat(chatId); setShowChatCafe(false); }}
+                onNewChat={() => { startNewChat(); setShowChatCafe(false); setMobileSidebarOpen(false); }}
+                onSelectChat={(chatId) => { loadChat(chatId); setShowChatCafe(false); setMobileSidebarOpen(false); }}
                 currentChatId={currentChatId}
                 onLogout={handleLogout}
                 onOpenAuth={() => setShowAuthModal(true)}
-                onExploreCafe={() => setShowChatCafe(true)}
+                onExploreCafe={() => { setShowChatCafe(true); setMobileSidebarOpen(false); }}
             />
 
             {showChatCafe ? (
@@ -224,7 +232,7 @@ const ChatLayout = () => {
             ) : (
                 <main className="main-content">
                     <div className="mobile-header">
-                        <Menu size={24} color="var(--text-primary)" onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
+                        <Menu size={24} color="var(--text-primary)" onClick={() => setMobileSidebarOpen(true)} style={{ cursor: 'pointer' }} />
                         <span className="mobile-brand">SNSR</span>
                         {user && (
                             <button className="mobile-logout" onClick={handleLogout}>

@@ -137,3 +137,26 @@
 .error-btn.primary:active svg {
     transform: rotate(180deg);
 }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .error-message-container {
+        max-width: 100%;
+    }
+
+    .error-message-card {
+        padding: 12px 14px;
+    }
+
+    .error-title {
+        font-size: 0.85rem;
+    }
+
+    .error-description {
+        font-size: 0.8rem;
+    }
+
+    .error-actions {
+        flex-wrap: wrap;
+    }
+}

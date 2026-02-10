@@ -21,6 +21,8 @@ import './Sidebar.css';
 const Sidebar = ({
     isCollapsed,
     toggleSidebar,
+    mobileSidebarOpen = false,
+    closeMobileSidebar,
     user,
     chatHistory = [],
     onNewChat,
@@ -34,7 +36,7 @@ const Sidebar = ({
     const [showHelpSubmenu, setShowHelpSubmenu] = useState(false);
 
     return (
-        <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+        <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''} ${mobileSidebarOpen ? 'mobile-open' : ''}`}>
             <div className="sidebar-header">
                 <div className="brand">
                     <img src="/logo.svg" alt="SNSR" className="brand-logo" />

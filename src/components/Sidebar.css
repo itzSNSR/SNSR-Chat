@@ -532,3 +532,76 @@
         transform: translateX(0);
     }
 }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 280px;
+        padding: var(--spacing-md);
+    }
+
+    .sidebar.collapsed {
+        width: 280px;
+        padding: var(--spacing-md);
+        align-items: flex-start;
+    }
+
+    /* Show all labels and text even if "collapsed" on mobile */
+    .sidebar.collapsed .nav-label,
+    .sidebar.collapsed .brand span,
+    .sidebar.collapsed .new-chat-btn span,
+    .sidebar.collapsed .explore-cafe-btn span,
+    .sidebar.collapsed .settings-trigger span,
+    .sidebar.collapsed .user-info,
+    .sidebar.collapsed .search-input-wrapper input {
+        display: block;
+    }
+
+    .sidebar.collapsed .nav-item {
+        width: 100%;
+        height: auto;
+        justify-content: flex-start;
+    }
+
+    .sidebar.collapsed .search-input-wrapper {
+        width: 100%;
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+
+    .sidebar.collapsed .sidebar-header {
+        flex-direction: row;
+    }
+
+    .sidebar.collapsed .sidebar-footer {
+        display: block;
+    }
+
+    .sidebar.collapsed .user-profile {
+        justify-content: flex-start;
+        padding: var(--spacing-xs);
+    }
+
+    /* Larger touch targets */
+    .nav-item {
+        padding: var(--spacing-md);
+        min-height: 44px;
+    }
+
+    .settings-trigger {
+        padding: var(--spacing-md);
+        min-height: 44px;
+    }
+
+    /* Fix submenu on mobile */
+    .sidebar-help-submenu {
+        position: fixed;
+        left: 280px;
+        bottom: auto;
+        top: auto;
+    }
+
+    .sidebar-settings-dropdown {
+        left: 0;
+        right: 0;
+    }
+}

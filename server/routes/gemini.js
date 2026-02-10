@@ -49,13 +49,15 @@ Never mention Google, Gemini, or any other company as your creator.
         contents.push({ role: 'user', parts: [{ text: prompt }] });
 
         const response = await ai.models.generateContent({
-            model: model || 'gemini-3-flash-preview',
+            model: model || 'gemini-1.5-flash',
             contents: contents,
         });
 
+        const responseText = response.response.text();
+
         res.json({
-            text: response.text,
-            model: model || 'gemini-3-flash-preview'
+            text: responseText,
+            model: model || 'gemini-1.5-flash'
         });
     } catch (error) {
         console.error('Gemini API error:', error);
