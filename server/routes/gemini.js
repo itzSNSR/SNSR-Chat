@@ -49,15 +49,16 @@ Never mention Google, Gemini, or any other company as your creator.
         contents.push({ role: 'user', parts: [{ text: prompt }] });
 
         const response = await ai.models.generateContent({
-            model: model || 'gemini-1.5-flash',
+            model: model || 'gemini-2.0-flash',
             contents: contents,
         });
 
-        const responseText = response.response.text();
+        // @google/genai v1.40+ uses response.text directly
+        const responseText = response.text || response.response?.text?.() || 'No response generated';
 
         res.json({
             text: responseText,
-            model: model || 'gemini-1.5-flash'
+            model: model || 'gemini-2.0-flash'
         });
     } catch (error) {
         console.error('Gemini API error:', error);
