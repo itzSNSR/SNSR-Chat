@@ -102,10 +102,51 @@ const Sidebar = ({
 
                     {showSettingsDropdown && !isCollapsed && (
                         <div className="sidebar-settings-dropdown">
-                            {/* Sign in / Logout */}
+                            {/* Help submenu — toggles on click */}
+                            <button
+                                className={`sidebar-settings-item has-submenu ${showHelpSubmenu ? 'submenu-open' : ''}`}
+                                onClick={() => setShowHelpSubmenu(!showHelpSubmenu)}
+                            >
+                                <HelpCircle size={16} />
+                                <span>Help</span>
+                                <ChevronRight size={14} className={`submenu-arrow ${showHelpSubmenu ? 'rotated' : ''}`} />
+                            </button>
+
+                            {showHelpSubmenu && (
+                                <div className="sidebar-help-submenu">
+                                    <a href="/contact-us.html" target="_blank" rel="noopener noreferrer" className="sidebar-settings-item sidebar-item-primary">
+                                        <MessageSquare size={14} />
+                                        <span>Contact Us</span>
+                                    </a>
+                                    <a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer"
+                                        className="sidebar-settings-item sidebar-item-primary"
+                                        onClick={() => setShowSettingsDropdown(false)}
+                                    >
+                                        <Shield size={14} />
+                                        <span>Privacy Policy</span>
+                                    </a>
+                                    <a href="https://github.com/itzSNSR/SNSR-Chat/issues" target="_blank" rel="noopener noreferrer" className="sidebar-settings-item sidebar-item-primary">
+                                        <Bug size={14} />
+                                        <span>Report Bug</span>
+                                    </a>
+                                    <a href="https://github.com/itzSNSR/SNSR-Chat/releases" target="_blank" rel="noopener noreferrer" className="sidebar-settings-item sidebar-item-secondary">
+                                        <FileText size={14} />
+                                        <span>Release notes</span>
+                                    </a>
+                                    <a href="https://github.com/itzSNSR/SNSR-Chat" target="_blank" rel="noopener noreferrer" className="sidebar-settings-item sidebar-item-secondary">
+                                        <Download size={14} />
+                                        <span>Download apps</span>
+                                    </a>
+                                </div>
+                            )}
+
+                            {/* Divider before logout */}
+                            <div className="sidebar-menu-divider"></div>
+
+                            {/* Logout / Sign in — always at bottom */}
                             {user ? (
                                 <button
-                                    className="sidebar-settings-item"
+                                    className="sidebar-settings-item sidebar-logout-item"
                                     onClick={() => {
                                         onLogout();
                                         setShowSettingsDropdown(false);
@@ -116,7 +157,7 @@ const Sidebar = ({
                                 </button>
                             ) : (
                                 <button
-                                    className="sidebar-settings-item"
+                                    className="sidebar-settings-item sidebar-signin-item"
                                     onClick={() => {
                                         onOpenAuth();
                                         setShowSettingsDropdown(false);
@@ -126,48 +167,6 @@ const Sidebar = ({
                                     <span>Sign in</span>
                                 </button>
                             )}
-
-                            {/* Help submenu */}
-                            <div
-                                className="sidebar-settings-item has-submenu"
-                                onMouseEnter={() => setShowHelpSubmenu(true)}
-                                onMouseLeave={() => setShowHelpSubmenu(false)}
-                            >
-                                <HelpCircle size={16} />
-                                <span>Help</span>
-                                <ChevronRight size={14} className="submenu-arrow" />
-
-                                {showHelpSubmenu && (
-                                    <div className="sidebar-help-submenu">
-                                        <a href="/contact-us.html" target="_blank" rel="noopener noreferrer" className="sidebar-settings-item">
-                                            <MessageSquare size={14} />
-                                            <span>Contact Us</span>
-                                        </a>
-                                        <a href="https://github.com/itzSNSR/SNSR-Chat/releases" target="_blank" rel="noopener noreferrer" className="sidebar-settings-item">
-                                            <FileText size={14} />
-                                            <span>Release notes</span>
-                                        </a>
-                                        <a
-                                            href="/privacy-policy.html"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="sidebar-settings-item"
-                                            onClick={() => setShowSettingsDropdown(false)}
-                                        >
-                                            <Shield size={14} />
-                                            <span>Privacy Policy</span>
-                                        </a>
-                                        <a href="https://github.com/itzSNSR/SNSR-Chat/issues" target="_blank" rel="noopener noreferrer" className="sidebar-settings-item">
-                                            <Bug size={14} />
-                                            <span>Report Bug</span>
-                                        </a>
-                                        <a href="https://github.com/itzSNSR/SNSR-Chat" target="_blank" rel="noopener noreferrer" className="sidebar-settings-item">
-                                            <Download size={14} />
-                                            <span>Download apps</span>
-                                        </a>
-                                    </div>
-                                )}
-                            </div>
                         </div>
                     )}
                 </div>

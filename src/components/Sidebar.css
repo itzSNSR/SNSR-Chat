@@ -533,20 +533,39 @@
     }
 }
 
-/* Mobile Responsive */
+.sidebar-menu-divider {
+    height: 1px;
+    background: var(--border-subtle);
+    margin: var(--spacing-xs) var(--spacing-sm);
+}
+
+.submenu-arrow {
+    margin-left: auto;
+    transition: transform 0.2s ease;
+}
+
+.submenu-arrow.rotated {
+    transform: rotate(90deg);
+}
+
+/* ═══════════════════════════════════════════════
+   MOBILE RESPONSIVE — Premium Native-Feel Menu
+   ═══════════════════════════════════════════════ */
 @media (max-width: 768px) {
+
+    /* ─── Sidebar Base ─── */
     .sidebar {
         width: 280px;
-        padding: var(--spacing-md);
+        padding: 16px;
     }
 
     .sidebar.collapsed {
         width: 280px;
-        padding: var(--spacing-md);
+        padding: 16px;
         align-items: flex-start;
     }
 
-    /* Show all labels and text even if "collapsed" on mobile */
+    /* Show all labels even when collapsed on mobile */
     .sidebar.collapsed .nav-label,
     .sidebar.collapsed .brand span,
     .sidebar.collapsed .new-chat-btn span,
@@ -565,7 +584,7 @@
 
     .sidebar.collapsed .search-input-wrapper {
         width: 100%;
-        padding: var(--spacing-sm) var(--spacing-md);
+        padding: 8px 12px;
     }
 
     .sidebar.collapsed .sidebar-header {
@@ -578,32 +597,100 @@
 
     .sidebar.collapsed .user-profile {
         justify-content: flex-start;
-        padding: var(--spacing-xs);
+        padding: 8px;
     }
 
-    /* Larger touch targets */
+    /* ─── Touch-Friendly Nav Items (48px min) ─── */
     .nav-item {
-        padding: var(--spacing-md);
-        min-height: 44px;
+        padding: 12px 16px;
+        min-height: 48px;
+        font-size: 0.9rem;
+        border-radius: 10px;
     }
 
+    .nav-item:active {
+        background-color: var(--bg-tertiary);
+    }
+
+    /* ─── Settings Trigger ─── */
     .settings-trigger {
-        padding: var(--spacing-md);
-        min-height: 44px;
+        padding: 12px 16px;
+        min-height: 48px;
+        font-size: 0.9rem;
+        border-radius: 10px;
     }
 
-    /* Fix submenu on mobile — inline instead of flyout */
+    .settings-trigger:active {
+        background-color: var(--bg-tertiary);
+    }
+
+    /* ─── Settings Dropdown — Full-Width Panel ─── */
+    .sidebar-settings-dropdown {
+        position: static;
+        width: 100%;
+        margin-top: 4px;
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
+        box-shadow: none;
+        padding: 6px;
+        animation: none;
+    }
+
+    /* ─── Menu Items — 48px Touch Targets ─── */
+    .sidebar-settings-item {
+        min-height: 48px;
+        padding: 12px 14px;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        gap: 12px;
+    }
+
+    .sidebar-settings-item:active {
+        background: var(--bg-tertiary);
+    }
+
+    /* Visual hierarchy — Primary items */
+    .sidebar-item-primary {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    /* Visual hierarchy — Secondary items (muted) */
+    .sidebar-item-secondary {
+        color: var(--text-secondary);
+        opacity: 0.7;
+        font-size: 0.82rem;
+    }
+
+    /* ─── Help Toggle Arrow — Rotates on open ─── */
+    .submenu-arrow {
+        transition: transform 0.2s ease;
+    }
+
+    .submenu-arrow.rotated {
+        transform: rotate(90deg);
+    }
+
+    /* Help parent when open */
+    .sidebar-settings-item.submenu-open {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+    }
+
+    /* ─── Help Submenu — Inline Panel ─── */
     .sidebar-help-submenu {
         position: static;
         min-width: unset;
         width: 100%;
-        margin-top: 4px;
+        margin: 4px 0;
         margin-left: 0;
-        background-color: var(--bg-tertiary);
+        padding: 4px 4px 4px 8px;
+        background-color: transparent;
         border: none;
-        border-radius: var(--radius-md);
+        border-left: 2px solid var(--accent-primary);
+        border-radius: 0;
         box-shadow: none;
-        padding: 4px;
         animation: none;
     }
 
@@ -611,8 +698,76 @@
         display: none;
     }
 
-    .sidebar-settings-dropdown {
-        left: 0;
-        right: 0;
+    .sidebar-help-submenu .sidebar-settings-item {
+        min-height: 44px;
+        padding: 10px 12px;
+        font-size: 0.85rem;
+        border-radius: 6px;
+    }
+
+    /* ─── Menu Divider ─── */
+    .sidebar-menu-divider {
+        height: 1px;
+        background: var(--border-subtle);
+        margin: 6px 8px;
+    }
+
+    /* ─── Logout — Distinct Warning Style ─── */
+    .sidebar-logout-item {
+        color: #f87171 !important;
+        font-weight: 500;
+    }
+
+    .sidebar-logout-item:active {
+        background: rgba(239, 68, 68, 0.1) !important;
+    }
+
+    /* ─── Sign In — Accent Style ─── */
+    .sidebar-signin-item {
+        color: var(--accent-primary) !important;
+        font-weight: 500;
+    }
+
+    .sidebar-signin-item:active {
+        background: rgba(139, 92, 246, 0.1) !important;
+    }
+
+    /* ─── Profile Section — Larger & Better ─── */
+    .user-profile {
+        padding: 12px;
+        gap: 12px;
+        border-radius: 12px;
+        min-height: 56px;
+    }
+
+    .user-profile:active {
+        background: var(--bg-tertiary);
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        font-size: 1rem;
+    }
+
+    .user-name {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .user-email {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        opacity: 0.8;
+    }
+
+    /* ─── New Chat / Explore Buttons ─── */
+    .new-chat-btn,
+    .explore-cafe-btn {
+        min-height: 48px;
+        border-radius: 10px;
+        font-size: 0.9rem;
     }
 }
