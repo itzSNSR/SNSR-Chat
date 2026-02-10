@@ -592,12 +592,23 @@
         min-height: 44px;
     }
 
-    /* Fix submenu on mobile */
+    /* Fix submenu on mobile — inline instead of flyout */
     .sidebar-help-submenu {
-        position: fixed;
-        left: 280px;
-        bottom: auto;
-        top: auto;
+        position: static;
+        min-width: unset;
+        width: 100%;
+        margin-top: 4px;
+        margin-left: 0;
+        background-color: var(--bg-tertiary);
+        border: none;
+        border-radius: var(--radius-md);
+        box-shadow: none;
+        padding: 4px;
+        animation: none;
+    }
+
+    .sidebar-help-submenu::before {
+        display: none;
     }
 
     .sidebar-settings-dropdown {
