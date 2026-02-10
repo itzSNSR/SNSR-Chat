@@ -7,8 +7,10 @@ import authRoutes from './routes/auth.js';
 import chatRoutes from './routes/chats.js';
 import geminiRoutes from './routes/gemini.js';
 
-// Fix for Windows DNS SRV lookup issues with MongoDB Atlas
-dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+// Fix for Windows DNS SRV lookup issues with MongoDB Atlas (Local Windows only)
+if (process.env.NODE_ENV !== 'production' && process.platform === 'win32') {
+    dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+}
 
 dotenv.config();
 
@@ -16,10 +18,50 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
-    credentials: true
+    origin: true, // Allow all origins for simplicity in this setup
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 app.use(express.json());
+
+// Database Connection Helper (Cached connection for Serverless)
+let isConnected = false;
+
+const connectDB = async () => {
+    if (isConnected) {
+        return;
+    }
+
+    // Check if we have an existing connection
+    if (mongoose.connections.length > 0) {
+        const dbState = mongoose.connections[0].readyState;
+        if (dbState === 1) {
+            isConnected = true;
+            return;
+        }
+    }
+
+    try {
+        await mongoose.connect(process.env.MONGODB_URI);
+        isConnected = true;
+        console.log('✅ MongoDB Connected (New Instance)');
+    } catch (error) {
+        console.error('❌ MongoDB Connection Error:', error);
+        throw error;
+    }
+};
+
+// Middleware to ensure DB connection on every request
+// Essential for Vercel serverless environment
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (error) {
+        console.error('Database connection failed in middleware:', error);
+        res.status(500).json({ error: 'Internal Server Error (DB)' });
+    }
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -31,17 +73,13 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'SNSR AI Server Running' });
 });
 
-// Connect to MongoDB and start server
-const PORT = process.env.PORT || 5000;
+// Export app for Vercel
+export default app;
 
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => {
-        console.log('✅ Connected to MongoDB');
-        app.listen(PORT, () => {
-            console.log(`🚀 Server running on http://localhost:${PORT}`);
-        });
-    })
-    .catch((err) => {
-        console.error('❌ MongoDB connection error:', err.message);
-        process.exit(1);
+// Start server if running locally (not in Vercel)
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running locally on http://localhost:${PORT}`);
     });
+}
