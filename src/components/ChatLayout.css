@@ -237,12 +237,15 @@
     }
 }
 
-/* Mobile Responsive */
+/* ═══════════════════════════════════════════
+   MOBILE RESPONSIVE — Premium Mobile UI
+   ═══════════════════════════════════════════ */
 @media (max-width: 768px) {
     .chat-layout {
         position: relative;
     }
 
+    /* ─── Sidebar Drawer ─── */
     .sidebar {
         position: fixed;
         top: 0;
@@ -256,7 +259,7 @@
 
     .sidebar.mobile-open {
         transform: translateX(0);
-        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+        box-shadow: 4px 0 16px rgba(0, 0, 0, 0.4);
     }
 
     .sidebar.collapsed {
@@ -278,41 +281,76 @@
         display: block;
     }
 
+    /* ─── Mobile Header — Compact ─── */
     .mobile-header {
         display: flex;
+        padding: 8px 16px;
+        min-height: 44px;
     }
 
-    .chat-area {
-        padding: var(--spacing-md) var(--spacing-sm);
+    .mobile-brand {
+        font-size: 1rem;
     }
 
-    .messages-list {
-        max-width: 100%;
-    }
-
+    /* ─── Model Selector — Compact ─── */
     .model-selector-header {
-        padding: var(--spacing-sm) var(--spacing-md);
+        padding: 6px 16px;
+        border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .model-selector-btn {
+        padding: 6px 10px;
+        gap: 8px;
+    }
+
+    .model-name {
+        font-size: 0.85rem;
+    }
+
+    .model-desc {
+        font-size: 0.65rem;
     }
 
     .model-dropdown-wrapper {
         max-width: 100%;
     }
 
-    .input-area-wrapper {
-        padding: 0 var(--spacing-sm) var(--spacing-md);
+    .model-dropdown {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
+    /* ─── Chat Area — Proper Padding ─── */
+    .chat-area {
+        padding: 12px 0;
+        overflow-x: hidden;
+        /* Prevent horizontal scroll */
+    }
+
+    .messages-list {
+        max-width: 100%;
+        padding-bottom: 8px;
+    }
+
+    /* ─── Input Area — Sticky + Safe Area ─── */
+    .input-area-wrapper {
+        padding: 0 8px 8px;
+        padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+        background: linear-gradient(to top, var(--bg-primary) 60%, transparent 100%);
+    }
+
+    /* ─── Settings — Mobile Optimized ─── */
     .settings-dropdown {
-        right: var(--spacing-sm);
+        right: 8px;
         min-width: 220px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
     .settings-submenu {
         position: static;
-        margin-top: var(--spacing-xs);
+        margin-top: 4px;
         box-shadow: none;
         border: none;
-        padding-left: var(--spacing-md);
+        padding-left: 16px;
         animation: none;
     }
 }

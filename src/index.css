@@ -66,13 +66,21 @@ body {
 }
 
 @media (max-width: 768px) {
+
+  html,
   body {
+    overflow-x: hidden;
+    /* Prevent any horizontal scroll */
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Hide scrollbar on mobile */
+  /* Thinner scrollbar on mobile */
   ::-webkit-scrollbar {
-    width: 4px;
+    width: 2px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
   }
 }
 

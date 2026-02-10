@@ -241,54 +241,175 @@
     color: var(--accent-primary);
 }
 
-/* Mobile Responsive */
+/* ═══════════════════════════════════════════
+   MOBILE RESPONSIVE — Premium Mobile UI
+   ═══════════════════════════════════════════ */
 @media (max-width: 768px) {
+
+    /* Layout */
     .message-row {
-        padding: 0 var(--spacing-xs);
-        gap: var(--spacing-sm);
+        padding: 0 16px;
+        gap: 8px;
+        margin-bottom: 16px;
     }
 
     .message-container {
-        max-width: 90%;
+        max-width: 95%;
+        min-width: 0;
+        /* prevent overflow */
     }
 
+    /* Avatars — compact */
     .message-avatar {
-        width: 28px;
-        height: 28px;
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
     }
 
     .avatar-logo {
-        width: 16px;
-        height: 16px;
+        width: 14px;
+        height: 14px;
     }
 
+    /* Typography — readable on mobile */
     .message-bubble {
-        font-size: 0.9rem;
-        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: 15px;
+        line-height: 1.7;
+        padding: 6px 10px;
     }
 
+    .user-container .message-bubble {
+        border-radius: 16px 16px 4px 16px;
+    }
+
+    /* Markdown headings — scaled for mobile */
     .message-bubble .md-h1 {
-        font-size: 1.3rem;
+        font-size: 1.25rem;
+        margin: 12px 0 8px 0;
     }
 
     .message-bubble .md-h2 {
-        font-size: 1.15rem;
+        font-size: 1.1rem;
+        margin: 10px 0 6px 0;
     }
 
     .message-bubble .md-h3 {
         font-size: 1rem;
+        margin: 8px 0 4px 0;
     }
 
-    .code-block-code {
-        font-size: 0.8rem;
+    .message-bubble .md-paragraph {
+        margin: 0 0 10px 0;
+    }
+
+    .message-bubble .md-list {
+        padding-left: 20px;
+    }
+
+    .message-bubble .md-code-inline {
+        font-size: 13px;
+        padding: 1px 5px;
+    }
+
+    /* ─── Code Blocks — NO OVERFLOW ─── */
+    .code-block-wrapper {
+        margin: 10px 0;
+        border-radius: 8px;
+        max-width: calc(100vw - 80px);
+        /* viewport - padding - avatar */
+        overflow: hidden;
+    }
+
+    .code-block-header {
+        padding: 6px 12px;
+    }
+
+    .code-language {
+        font-size: 11px;
+    }
+
+    .code-copy-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+        min-height: 28px;
     }
 
     .code-block-pre {
-        padding: var(--spacing-sm);
+        padding: 12px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
-    /* Always show message actions on touch devices */
+    .code-block-code {
+        font-size: 13px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+
+    /* ─── Collapsible Code Block ─── */
+    .code-block-wrapper.collapsed .code-block-pre {
+        max-height: 240px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .code-block-wrapper.collapsed .code-block-pre::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        background: linear-gradient(to top, #0d1117 0%, transparent 100%);
+        pointer-events: none;
+    }
+
+    .code-toggle-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        width: 100%;
+        padding: 8px;
+        background: #161b22;
+        border: none;
+        border-top: 1px solid var(--border-subtle);
+        color: var(--accent-primary);
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.15s ease;
+    }
+
+    .code-toggle-btn:active {
+        background: #1c2333;
+    }
+
+    /* ─── Message Actions — Touch Friendly ─── */
     .message-actions {
         opacity: 1;
+        gap: 4px;
+        margin-top: 6px;
+    }
+
+    .action-btn {
+        padding: 8px 10px;
+        min-height: 36px;
+        min-width: 36px;
+        border-radius: 8px;
+        font-size: 12px;
+    }
+
+    .action-btn:active {
+        background-color: var(--bg-tertiary);
+    }
+}
+
+/* Hide toggle on desktop */
+@media (min-width: 769px) {
+    .code-toggle-btn {
+        display: none;
     }
 }

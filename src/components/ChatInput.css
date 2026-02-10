@@ -116,18 +116,51 @@
     }
 }
 
-/* Mobile Responsive */
+/* ═══════════════════════════════════════════
+   MOBILE RESPONSIVE — Premium Mobile UI
+   ═══════════════════════════════════════════ */
 @media (max-width: 768px) {
     .chat-input-container {
-        padding: var(--spacing-sm);
+        padding: 4px 8px;
+        max-width: 100%;
+    }
+
+    .chat-input-wrapper {
+        padding: 6px 8px;
+        border-radius: 20px;
+        box-shadow: none;
+        /* Remove heavy shadow for performance */
+        gap: 4px;
     }
 
     .chat-textarea {
-        font-size: 0.95rem;
-        min-height: 20px;
+        font-size: 16px;
+        /* Prevents iOS zoom on focus */
+        min-height: 44px;
+        padding: 10px 8px;
+        line-height: 1.5;
+    }
+
+    /* Touch-friendly buttons — 44px minimum */
+    .input-action-btn {
+        padding: 10px;
+        min-width: 44px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .send-btn {
+        padding: 10px;
+        min-width: 44px;
+        min-height: 44px;
+        border-radius: 12px;
     }
 
     .input-footer {
-        font-size: 0.65rem;
+        font-size: 10px;
+        padding-top: 4px;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 }

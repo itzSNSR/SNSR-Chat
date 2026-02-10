@@ -1,23 +1,26 @@
 import React, { useState } from 'react';
-import { User, Copy, ThumbsUp, ThumbsDown, RotateCcw, Check } from 'lucide-react';
+import { User, Copy, ThumbsUp, ThumbsDown, RotateCcw, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import './MessageBubble.css';
 
-// Code block component with copy button
+// Code block component with copy button + collapsible on mobile
 const CodeBlock = ({ children, className }) => {
     const [copied, setCopied] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(true);
     const language = className?.replace('language-', '') || '';
+    const codeText = String(children).replace(/\n$/, '');
+    const lineCount = codeText.split('\n').length;
+    const isLong = lineCount > 15;
 
     const handleCopy = () => {
-        const code = String(children).replace(/\n$/, '');
-        navigator.clipboard.writeText(code);
+        navigator.clipboard.writeText(codeText);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
 
     return (
-        <div className="code-block-wrapper">
+        <div className={`code-block-wrapper ${isLong && isCollapsed ? 'collapsed' : ''}`}>
             <div className="code-block-header">
                 <span className="code-language">{language || 'code'}</span>
                 <button className="code-copy-btn" onClick={handleCopy} title="Copy code">
@@ -30,6 +33,11 @@ const CodeBlock = ({ children, className }) => {
                     {children}
                 </code>
             </pre>
+            {isLong && (
+                <button className="code-toggle-btn" onClick={() => setIsCollapsed(!isCollapsed)}>
+                    {isCollapsed ? <><ChevronDown size={14} /> Show more ({lineCount} lines)</> : <><ChevronUp size={14} /> Show less</>}
+                </button>
+            )}
         </div>
     );
 };
