@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Copy, ThumbsUp, ThumbsDown, RotateCcw, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { User, Copy, ThumbsUp, ThumbsDown, RotateCcw, Check, ChevronDown, ChevronUp, FileText, Image as ImageIcon } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import './MessageBubble.css';
@@ -42,12 +42,44 @@ const CodeBlock = ({ children, className }) => {
     );
 };
 
+// File card component for uploaded files
+const FileCard = ({ fileName, fileType }) => {
+    const isPdf = fileType === 'application/pdf' || fileName?.endsWith('.pdf');
+
+    return (
+        <div className="file-card">
+            <div className="file-card-icon">
+                {isPdf ? <FileText size={20} /> : <ImageIcon size={20} />}
+            </div>
+            <div className="file-card-info">
+                <span className="file-card-name">{fileName}</span>
+                <span className="file-card-label">Uploaded</span>
+            </div>
+        </div>
+    );
+};
+
+// AI file reference tag
+const FileRefTag = ({ fileName }) => {
+    if (!fileName) return null;
+    return (
+        <div className="file-ref-tag">
+            <FileText size={12} />
+            <span>Regarding {fileName}</span>
+        </div>
+    );
+};
+
 const MessageBubble = ({ message }) => {
     const isUser = message.sender === 'user';
     const [copied, setCopied] = useState(false);
 
+    // Check if the previous AI message is responding to a file
+    const hasFile = message.fileName;
+
     const handleCopy = () => {
-        navigator.clipboard.writeText(message.text);
+        const textToCopy = message.text || message.fileName || '';
+        navigator.clipboard.writeText(textToCopy);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
@@ -62,9 +94,30 @@ const MessageBubble = ({ message }) => {
 
             <div className={`message-container ${isUser ? 'user-container' : 'ai-container'}`}>
                 {!isUser && <div className="message-sender">SNSR</div>}
-                <div className="message-bubble">
+
+                {/* AI file reference tag */}
+                {!isUser && message.fileRef && (
+                    <FileRefTag fileName={message.fileRef} />
+                )}
+
+                <div className={`message-bubble ${hasFile ? 'has-file-bubble' : ''}`}>
                     {isUser ? (
-                        message.text
+                        <>
+                            {/* File card at top of user message */}
+                            {hasFile && (
+                                <FileCard fileName={message.fileName} fileType={message.fileType} />
+                            )}
+                            {/* User text below file card */}
+                            {message.text && (
+                                <div className={hasFile ? 'file-message-text' : ''}>
+                                    {message.text}
+                                </div>
+                            )}
+                            {/* If file with no text, show default action */}
+                            {hasFile && !message.text && (
+                                <div className="file-default-action">Analyze this file</div>
+                            )}
+                        </>
                     ) : (
                         <ReactMarkdown
                             remarkPlugins={[remarkGfm]}

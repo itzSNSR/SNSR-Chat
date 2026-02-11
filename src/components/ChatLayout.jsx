@@ -145,11 +145,13 @@ const ChatLayout = () => {
         if (file) {
             setIsUploading(true);
 
-            // Show user message with file indicator
+            // Show user message with file metadata (structured, not markdown)
             const userMsg = {
                 id: Date.now().toString(),
-                text: text ? `📎 **${file.name}**\n\n${text}` : `📎 **${file.name}**\n\n_Analyze this file_`,
+                text: text || '',
                 sender: 'user',
+                fileName: file.name,
+                fileType: file.type,
                 timestamp: new Date()
             };
             setMessages(prev => [...prev, userMsg]);
@@ -211,6 +213,7 @@ const ChatLayout = () => {
                 id: (Date.now() + 1).toString(),
                 text: res.data.text,
                 sender: 'ai',
+                ...(file && { fileRef: file.name }),
                 timestamp: new Date()
             };
             setMessages(prev => [...prev, aiResponse]);
