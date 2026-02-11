@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
 import chatRoutes from './routes/chats.js';
 import geminiRoutes from './routes/gemini.js';
+import ocrRoutes from './routes/ocr.js';
 
 dotenv.config();
 
@@ -57,6 +58,7 @@ app.use(async (req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/chats', chatRoutes);
 app.use('/api/gemini', geminiRoutes);
+app.use('/api/ocr', ocrRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

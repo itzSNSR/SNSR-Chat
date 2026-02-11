@@ -48,6 +48,18 @@ export const geminiAPI = {
     generate: (prompt, model, history = []) => api.post('/api/gemini/generate', { prompt, model, history })
 };
 
+// OCR API (through backend proxy)
+export const ocrAPI = {
+    extract: (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return api.post('/api/ocr/extract', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: 30000 // 30s timeout for OCR processing
+        });
+    }
+};
+
 // Helper functions
 export const saveAuth = (token, user) => {
     localStorage.setItem('token', token);

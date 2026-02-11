@@ -7,7 +7,7 @@ import AuthModal from './AuthModal';
 import ChatCafe from './ChatCafe';
 import ErrorMessage from './ErrorMessage';
 import { Menu, ChevronDown, LogOut, Settings, LogIn, HelpCircle, FileText, Shield, Bug, Download, ChevronRight } from 'lucide-react';
-import { geminiAPI, chatAPI, getStoredUser, isLoggedIn, authAPI } from '../services/api';
+import { geminiAPI, chatAPI, ocrAPI, getStoredUser, isLoggedIn, authAPI } from '../services/api';
 import './ChatLayout.css';
 
 const MODELS = [
@@ -21,6 +21,7 @@ const ANONYMOUS_MESSAGE_LIMIT = 2;
 const ChatLayout = () => {
     const [messages, setMessages] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
     const [selectedModel, setSelectedModel] = useState(MODELS[0].id);
@@ -117,7 +118,7 @@ const ChatLayout = () => {
         }
     };
 
-    const handleSendMessage = async (text) => {
+    const handleSendMessage = async (text, file = null) => {
         // Check anonymous message limit
         if (!user) {
             if (anonymousMessageCount >= ANONYMOUS_MESSAGE_LIMIT) {
@@ -138,29 +139,73 @@ const ChatLayout = () => {
             }
         }
 
-        // Add user message
-        const newMessage = {
-            id: Date.now().toString(),
-            text,
-            sender: 'user',
-            timestamp: new Date()
-        };
+        let finalPrompt = text;
 
-        setMessages(prev => [...prev, newMessage]);
-        setIsLoading(true);
+        // If file is attached, extract text via OCR first
+        if (file) {
+            setIsUploading(true);
 
-        // Save user message to backend
-        if (currentChatId) {
+            // Show user message with file indicator
+            const userMsg = {
+                id: Date.now().toString(),
+                text: text ? `📎 **${file.name}**\n\n${text}` : `📎 **${file.name}**\n\n_Analyze this file_`,
+                sender: 'user',
+                timestamp: new Date()
+            };
+            setMessages(prev => [...prev, userMsg]);
+            setIsLoading(true);
+
+            // Save user message to backend
+            if (currentChatId) {
+                try { await chatAPI.addMessage(currentChatId, userMsg); } catch (e) { console.error(e); }
+            }
+
             try {
-                await chatAPI.addMessage(currentChatId, newMessage);
-            } catch (error) {
-                console.error('Failed to save message:', error);
+                const ocrRes = await ocrAPI.extract(file);
+                const extractedText = ocrRes.data.text;
+                const pageCount = ocrRes.data.pages;
+
+                // Build the prompt for Gemini with extracted text
+                finalPrompt = `The user uploaded a file: "${file.name}" (${pageCount} page${pageCount > 1 ? 's' : ''}).\n\nHere is the extracted text from the file:\n\n---\n${extractedText}\n---\n\n${text ? `The user's question about this file: ${text}` : 'Please analyze and explain the content of this file in detail.'}`;
+
+            } catch (ocrError) {
+                console.error('OCR Error:', ocrError);
+                const errorText = ocrError.response?.data?.error || ocrError.message || 'Failed to extract text from file';
+                setMessages(prev => [...prev, {
+                    id: (Date.now() + 1).toString(),
+                    text: `❌ **OCR Error:** ${errorText}`,
+                    sender: 'ai',
+                    isError: true,
+                    originalPrompt: text,
+                    timestamp: new Date()
+                }]);
+                setIsLoading(false);
+                setIsUploading(false);
+                return;
+            } finally {
+                setIsUploading(false);
+            }
+        } else {
+            // Normal text-only message
+            const newMessage = {
+                id: Date.now().toString(),
+                text,
+                sender: 'user',
+                timestamp: new Date()
+            };
+
+            setMessages(prev => [...prev, newMessage]);
+            setIsLoading(true);
+
+            // Save user message to backend
+            if (currentChatId) {
+                try { await chatAPI.addMessage(currentChatId, newMessage); } catch (e) { console.error(e); }
             }
         }
 
         // Call Gemini API through backend proxy with conversation history
         try {
-            const res = await geminiAPI.generate(text, selectedModel, messages);
+            const res = await geminiAPI.generate(finalPrompt, selectedModel, messages);
 
             const aiResponse = {
                 id: (Date.now() + 1).toString(),
@@ -307,7 +352,7 @@ const ChatLayout = () => {
                     </div>
 
                     <div className="input-area-wrapper">
-                        <ChatInput onSendMessage={handleSendMessage} />
+                        <ChatInput onSendMessage={handleSendMessage} isUploading={isUploading} />
                     </div>
                 </main>
             )}

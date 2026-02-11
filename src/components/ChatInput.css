@@ -117,6 +117,92 @@
 }
 
 /* ═══════════════════════════════════════════
+   FILE UPLOAD — Preview Chip & States
+   ═══════════════════════════════════════════ */
+.file-preview-chip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    margin: 0 auto 8px;
+    max-width: 800px;
+    width: 100%;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    gap: 8px;
+    animation: chipSlideIn 0.2s ease-out;
+}
+
+@keyframes chipSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.file-preview-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    color: var(--text-primary);
+}
+
+.file-preview-info svg {
+    flex-shrink: 0;
+    color: var(--accent-primary);
+}
+
+.file-preview-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-preview-size {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.file-preview-remove {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.file-preview-remove:hover {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+}
+
+/* Paperclip active state when file attached */
+.input-action-btn.has-file {
+    color: var(--accent-primary);
+}
+
+/* Uploading state */
+.chat-input-wrapper.uploading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════
    MOBILE RESPONSIVE — Premium Mobile UI
    ═══════════════════════════════════════════ */
 @media (max-width: 768px) {
