@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Paperclip, Mic, Globe, MicOff, X, FileText, Image } from 'lucide-react';
+import { Send, Plus, Mic, Globe, MicOff, X, FileText, Image, Paperclip, File } from 'lucide-react';
 import './ChatInput.css';
 
 const ChatInput = ({ onSendMessage, isUploading }) => {
     const [input, setInput] = useState('');
     const [isListening, setIsListening] = useState(false);
     const [attachedFile, setAttachedFile] = useState(null);
+    const [showAttachMenu, setShowAttachMenu] = useState(false);
     const recognitionRef = useRef(null);
     const fileInputRef = useRef(null);
+    const attachMenuRef = useRef(null);
+    const attachBtnRef = useRef(null);
 
     useEffect(() => {
         // Initialize Speech Recognition
@@ -59,6 +62,28 @@ const ChatInput = ({ onSendMessage, isUploading }) => {
         }
     }, []);
 
+    // Close attach menu on outside click
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (
+                showAttachMenu &&
+                attachMenuRef.current &&
+                !attachMenuRef.current.contains(e.target) &&
+                attachBtnRef.current &&
+                !attachBtnRef.current.contains(e.target)
+            ) {
+                setShowAttachMenu(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, [showAttachMenu]);
+
     const toggleListening = () => {
         if (!recognitionRef.current) {
             alert('Speech recognition is not supported in this browser. Please try using Google Chrome, Microsoft Edge, or Safari.');
@@ -89,8 +114,15 @@ const ChatInput = ({ onSendMessage, isUploading }) => {
         }
 
         setAttachedFile(file);
-        // Reset input so same file can be re-selected
         e.target.value = '';
+    };
+
+    const openFilePicker = (accept) => {
+        if (fileInputRef.current) {
+            fileInputRef.current.accept = accept;
+            fileInputRef.current.click();
+        }
+        setShowAttachMenu(false);
     };
 
     const removeFile = () => {
@@ -145,21 +177,50 @@ const ChatInput = ({ onSendMessage, isUploading }) => {
 
             <div className={`chat-input-wrapper ${isListening ? 'listening' : ''} ${isUploading ? 'uploading' : ''}`}>
                 <div className="input-actions-left">
+                    {/* Attach button — opens selector menu, NOT file picker directly */}
                     <button
-                        className={`input-action-btn ${attachedFile ? 'has-file' : ''}`}
-                        title="Attach image or PDF"
-                        onClick={() => fileInputRef.current?.click()}
+                        ref={attachBtnRef}
+                        className={`input-action-btn attach-btn ${attachedFile ? 'has-file' : ''} ${showAttachMenu ? 'menu-open' : ''}`}
+                        title="Attach"
+                        onClick={() => setShowAttachMenu(!showAttachMenu)}
                         disabled={isUploading}
                     >
-                        <Paperclip size={20} />
+                        <Plus size={20} />
                     </button>
+
+                    {/* Hidden file input (reused by all menu options) */}
                     <input
                         ref={fileInputRef}
                         type="file"
-                        accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf"
                         onChange={handleFileSelect}
                         style={{ display: 'none' }}
                     />
+
+                    {/* Desktop Popover / Mobile Bottom Sheet */}
+                    {showAttachMenu && (
+                        <>
+                            {/* Mobile overlay backdrop */}
+                            <div className="attach-menu-backdrop" onClick={() => setShowAttachMenu(false)} />
+
+                            <div ref={attachMenuRef} className="attach-menu">
+                                <button
+                                    className="attach-menu-item"
+                                    onClick={() => openFilePicker('.jpg,.jpeg,.png,.gif,.bmp,.pdf')}
+                                >
+                                    <Paperclip size={18} />
+                                    <span>Add photos & files</span>
+                                </button>
+                                <button
+                                    className="attach-menu-item"
+                                    onClick={() => openFilePicker('.pdf,.doc,.docx,.txt')}
+                                >
+                                    <File size={18} />
+                                    <span>Upload document</span>
+                                </button>
+                            </div>
+                        </>
+                    )}
+
                     <button className="input-action-btn" title="Web search">
                         <Globe size={20} />
                     </button>
