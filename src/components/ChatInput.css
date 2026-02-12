@@ -21,7 +21,8 @@
 
 .chat-input-wrapper:focus-within {
     border-color: var(--border-highlight);
-    box-shadow: 0 0 0 2px var(--accent-glow);
+    /* Subtle glow instead of thick ring */
+    box-shadow: 0 0 0 1px var(--accent-primary), 0 0 12px rgba(var(--accent-primary-rgb), 0.1);
 }
 
 .chat-textarea {

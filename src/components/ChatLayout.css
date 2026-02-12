@@ -94,6 +94,7 @@
 .model-selector-btn:hover {
     border-color: var(--border-highlight);
     background-color: var(--bg-tertiary);
+    transform: scale(1.01);
 }
 
 .model-info {

@@ -771,6 +771,20 @@
         font-size: 0.9rem;
     }
 
+    /* Secondary Button - Less Emphasis */
+    .explore-cafe-btn {
+        background: transparent;
+        border: 1px solid var(--border-subtle);
+        color: var(--text-secondary);
+        opacity: 0.8;
+    }
+
+    .explore-cafe-btn:hover {
+        opacity: 1;
+        background: var(--bg-tertiary);
+        border-color: var(--border-highlight);
+    }
+
     /* ─── Typography Refinements ─── */
     .nav-label,
     .archived-toggle span {
@@ -826,6 +840,8 @@
     display: flex;
     align-items: center;
     width: 100%;
+    margin-bottom: 4px;
+    /* Slight vertical spacing */
 }
 
 .nav-item {
@@ -835,10 +851,11 @@
     position: relative;
     border-left: 3px solid transparent;
     /* For active state accent */
+    transition: all 0.2s ease;
 }
 
 .nav-item.active {
-    background-color: var(--bg-tertiary);
+    background: linear-gradient(90deg, rgba(var(--accent-primary-rgb), 0.1) 0%, transparent 100%);
     color: var(--text-primary);
     border-left-color: var(--accent-primary);
 }
