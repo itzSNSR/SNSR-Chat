@@ -1,7 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, User, Mail, Lock, Eye, EyeOff, LogIn, UserPlus, Loader, KeyRound, RefreshCw } from 'lucide-react';
 import { authAPI, saveAuth } from '../services/api';
 import './AuthModal.css';
+
+// API URL for ALTCHA challenge endpoint
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
     const [isLogin, setIsLogin] = useState(true);
@@ -9,6 +12,11 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+
+    // ALTCHA captcha state
+    const [captchaPayload, setCaptchaPayload] = useState(null);
+    const [captchaReady, setCaptchaReady] = useState(false);
+    const altchaRef = useRef(null);
 
     // OTP verification state
     const [step, setStep] = useState('form'); // 'form' | 'otp'
@@ -23,6 +31,41 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
         password: ''
     });
 
+    // Load ALTCHA widget script
+    useEffect(() => {
+        if (document.querySelector('script[data-altcha]')) {
+            setCaptchaReady(true);
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/altcha/dist/altcha.min.js';
+        script.async = true;
+        script.defer = true;
+        script.type = 'module';
+        script.setAttribute('data-altcha', 'true');
+        script.onload = () => setCaptchaReady(true);
+        document.head.appendChild(script);
+    }, []);
+
+    // Listen for ALTCHA verification events
+    useEffect(() => {
+        const widget = altchaRef.current;
+        if (!widget) return;
+
+        const handleStateChange = (e) => {
+            if (e.detail?.state === 'verified' && e.detail?.payload) {
+                setCaptchaPayload(e.detail.payload);
+                setError('');
+            } else if (e.detail?.state === 'error') {
+                setCaptchaPayload(null);
+            }
+        };
+
+        widget.addEventListener('statechange', handleStateChange);
+        return () => widget.removeEventListener('statechange', handleStateChange);
+    }, [captchaReady, isLogin, step]);
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
         setError('');
@@ -30,14 +73,13 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
 
     // OTP input handlers
     const handleOtpChange = (index, value) => {
-        if (!/^\d*$/.test(value)) return; // Only digits
+        if (!/^\d*$/.test(value)) return;
 
         const newOtp = [...otp];
-        newOtp[index] = value.slice(-1); // Only last digit
+        newOtp[index] = value.slice(-1);
         setOtp(newOtp);
         setError('');
 
-        // Auto-focus next input
         if (value && index < 5) {
             otpRefs.current[index + 1]?.focus();
         }
@@ -59,6 +101,19 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
         setOtp(newOtp);
     };
 
+    const resetCaptcha = useCallback(() => {
+        setCaptchaPayload(null);
+        // Reset the ALTCHA widget by removing and re-adding it
+        if (altchaRef.current) {
+            try {
+                // The widget re-fetches challenge when reset
+                altchaRef.current.reset?.();
+            } catch {
+                // Fallback: will re-render naturally
+            }
+        }
+    }, []);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -66,9 +121,17 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
 
         try {
             if (isLogin) {
+                // Require captcha for login
+                if (!captchaPayload) {
+                    setError('Please complete the security check first');
+                    setLoading(false);
+                    return;
+                }
+
                 const res = await authAPI.login({
                     email: formData.email,
-                    password: formData.password
+                    password: formData.password,
+                    captchaPayload: captchaPayload
                 });
 
                 saveAuth(res.data.token, res.data.user);
@@ -81,7 +144,6 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
                     password: formData.password
                 });
 
-                // After signup, show OTP verification
                 if (res.data.requiresVerification) {
                     setPendingUser({ userId: res.data.userId, email: res.data.email });
                     setStep('otp');
@@ -100,6 +162,8 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
             } else {
                 setError(err.response?.data?.error || 'Something went wrong');
             }
+            // Reset captcha on error so user can retry
+            resetCaptcha();
         } finally {
             setLoading(false);
         }
@@ -150,6 +214,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
         setPendingUser(null);
         setOtp(['', '', '', '', '', '']);
         setFormData({ fullName: '', username: '', email: '', password: '' });
+        resetCaptcha();
     };
 
     const resetToForm = () => {
@@ -245,7 +310,36 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
                                 </button>
                             </div>
 
-                            <button type="submit" className="auth-submit" disabled={loading}>
+                            {/* ALTCHA Captcha Widget — Login only */}
+                            {isLogin && (
+                                <div className="captcha-wrapper">
+                                    {captchaReady ? (
+                                        <altcha-widget
+                                            ref={altchaRef}
+                                            challengeurl={`${API_URL}/api/captcha/challenge`}
+                                            hidefooter
+                                            style={{
+                                                '--altcha-max-width': '100%',
+                                                '--altcha-color-base': 'var(--bg-tertiary)',
+                                                '--altcha-color-border': 'var(--border-subtle)',
+                                                '--altcha-color-text': 'var(--text-primary)',
+                                                '--altcha-color-border-focus': 'var(--accent-primary)',
+                                            }}
+                                        ></altcha-widget>
+                                    ) : (
+                                        <div className="captcha-loading">
+                                            <Loader size={14} className="spin" />
+                                            <span>Loading security check...</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            <button
+                                type="submit"
+                                className="auth-submit"
+                                disabled={loading || (isLogin && !captchaPayload)}
+                            >
                                 {loading ? (
                                     <Loader size={18} className="spin" />
                                 ) : (

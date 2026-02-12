@@ -166,6 +166,32 @@
     color: var(--text-primary);
 }
 
+/* ─── ALTCHA Captcha ─── */
+.captcha-wrapper {
+    margin: 4px 0 0;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    animation: fadeIn 0.3s ease;
+}
+
+.captcha-wrapper altcha-widget {
+    display: block;
+    width: 100%;
+}
+
+.captcha-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
 .auth-submit {
     display: flex;
     align-items: center;

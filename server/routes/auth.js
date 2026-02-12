@@ -2,6 +2,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import { generateOTP, sendOTPEmail } from '../services/email.js';
+import { verifyCaptcha } from './captcha.js';
 
 const router = express.Router();
 
@@ -163,7 +164,13 @@ router.post('/resend-otp', async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, captchaPayload } = req.body;
+
+        // Verify ALTCHA captcha FIRST — reject before any DB work
+        const captchaOk = await verifyCaptcha(captchaPayload);
+        if (!captchaOk) {
+            return res.status(403).json({ error: 'Captcha verification failed. Please try again.' });
+        }
 
         // Find user by email
         const user = await User.findOne({ email: email.toLowerCase() });
