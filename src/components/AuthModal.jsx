@@ -1,10 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, User, Mail, Lock, Eye, EyeOff, LogIn, UserPlus, Loader, KeyRound, RefreshCw } from 'lucide-react';
-import { authAPI, saveAuth } from '../services/api';
+import { X, User, Mail, Lock, Eye, EyeOff, LogIn, UserPlus, Loader, KeyRound, RefreshCw, ShieldCheck } from 'lucide-react';
+import { authAPI, captchaAPI, saveAuth } from '../services/api';
 import './AuthModal.css';
-
-// Turnstile site key
-const TURNSTILE_SITE_KEY = '0x4AAAAAACa89XDfGYfGumbE';
 
 const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
     const [isLogin, setIsLogin] = useState(true);
@@ -13,11 +10,11 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    // Turnstile captcha state
-    const [captchaToken, setCaptchaToken] = useState(null);
-    const [turnstileReady, setTurnstileReady] = useState(false);
-    const turnstileContainerRef = useRef(null);
-    const turnstileWidgetId = useRef(null);
+    // Math captcha state
+    const [captchaQuestion, setCaptchaQuestion] = useState('');
+    const [captchaToken, setCaptchaToken] = useState('');
+    const [captchaAnswer, setCaptchaAnswer] = useState('');
+    const [captchaLoading, setCaptchaLoading] = useState(false);
 
     // OTP verification state
     const [step, setStep] = useState('form'); // 'form' | 'otp'
@@ -32,66 +29,28 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
         password: ''
     });
 
-    // Load Turnstile script
-    useEffect(() => {
-        if (window.turnstile) {
-            setTurnstileReady(true);
-            return;
+    // Load captcha challenge
+    const loadCaptcha = useCallback(async () => {
+        setCaptchaLoading(true);
+        setCaptchaAnswer('');
+        try {
+            const res = await captchaAPI.getChallenge();
+            setCaptchaQuestion(res.data.question);
+            setCaptchaToken(res.data.token);
+        } catch {
+            setCaptchaQuestion('');
+            setCaptchaToken('');
+        } finally {
+            setCaptchaLoading(false);
         }
-
-        if (document.querySelector('script[data-turnstile]')) return;
-
-        const script = document.createElement('script');
-        script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileReady';
-        script.async = true;
-        script.defer = true;
-        script.setAttribute('data-turnstile', 'true');
-        document.head.appendChild(script);
-
-        window.onTurnstileReady = () => {
-            setTurnstileReady(true);
-        };
-
-        return () => {
-            delete window.onTurnstileReady;
-        };
     }, []);
 
-    // Render Turnstile widget when ready and in login mode
+    // Load captcha when switching to login mode
     useEffect(() => {
-        if (!turnstileReady || !isLogin || step !== 'form' || !turnstileContainerRef.current) return;
-        if (!window.turnstile) return;
-
-        // Clean up previous widget
-        if (turnstileWidgetId.current !== null) {
-            try { window.turnstile.remove(turnstileWidgetId.current); } catch { }
-            turnstileWidgetId.current = null;
+        if (isLogin && step === 'form') {
+            loadCaptcha();
         }
-
-        // Render new widget
-        turnstileWidgetId.current = window.turnstile.render(turnstileContainerRef.current, {
-            sitekey: TURNSTILE_SITE_KEY,
-            theme: 'dark',
-            size: 'flexible',
-            callback: (token) => {
-                setCaptchaToken(token);
-                setError('');
-            },
-            'error-callback': () => {
-                setCaptchaToken(null);
-            },
-            'expired-callback': () => {
-                setCaptchaToken(null);
-            },
-        });
-
-        return () => {
-            if (turnstileWidgetId.current !== null) {
-                try { window.turnstile.remove(turnstileWidgetId.current); } catch { }
-                turnstileWidgetId.current = null;
-            }
-        };
-    }, [turnstileReady, isLogin, step]);
+    }, [isLogin, step, loadCaptcha]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -128,13 +87,6 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
         setOtp(newOtp);
     };
 
-    const resetCaptcha = useCallback(() => {
-        setCaptchaToken(null);
-        if (window.turnstile && turnstileWidgetId.current !== null) {
-            try { window.turnstile.reset(turnstileWidgetId.current); } catch { }
-        }
-    }, []);
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -142,9 +94,9 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
 
         try {
             if (isLogin) {
-                // Require captcha for login
-                if (!captchaToken) {
-                    setError('Please complete the security check');
+                // Require captcha answer
+                if (!captchaAnswer.trim()) {
+                    setError('Please solve the math problem');
                     setLoading(false);
                     return;
                 }
@@ -152,7 +104,8 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
                 const res = await authAPI.login({
                     email: formData.email,
                     password: formData.password,
-                    captchaPayload: captchaToken
+                    captchaAnswer: captchaAnswer.trim(),
+                    captchaToken: captchaToken
                 });
 
                 saveAuth(res.data.token, res.data.user);
@@ -182,7 +135,8 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
             } else {
                 setError(err.response?.data?.error || 'Something went wrong');
             }
-            resetCaptcha();
+            // Refresh captcha on error
+            loadCaptcha();
         } finally {
             setLoading(false);
         }
@@ -233,7 +187,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
         setPendingUser(null);
         setOtp(['', '', '', '', '', '']);
         setFormData({ fullName: '', username: '', email: '', password: '' });
-        setCaptchaToken(null);
+        setCaptchaAnswer('');
     };
 
     const resetToForm = () => {
@@ -329,23 +283,55 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
                                 </button>
                             </div>
 
-                            {/* Cloudflare Turnstile — Login only */}
+                            {/* Math Captcha — Login only */}
                             {isLogin && (
-                                <div className="captcha-wrapper">
-                                    <div ref={turnstileContainerRef}></div>
-                                    {!turnstileReady && (
-                                        <div className="captcha-loading">
-                                            <Loader size={14} className="spin" />
-                                            <span>Loading security check...</span>
-                                        </div>
-                                    )}
+                                <div className="captcha-box">
+                                    <div className="captcha-header">
+                                        <ShieldCheck size={16} />
+                                        <span>Security Check</span>
+                                    </div>
+                                    <div className="captcha-body">
+                                        {captchaLoading ? (
+                                            <div className="captcha-loading">
+                                                <Loader size={14} className="spin" />
+                                                <span>Loading...</span>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <div className="captcha-question">
+                                                    <span className="captcha-math">{captchaQuestion}</span>
+                                                    <span className="captcha-equals">=</span>
+                                                    <input
+                                                        type="text"
+                                                        inputMode="numeric"
+                                                        className="captcha-input"
+                                                        placeholder="?"
+                                                        value={captchaAnswer}
+                                                        onChange={(e) => {
+                                                            setCaptchaAnswer(e.target.value);
+                                                            setError('');
+                                                        }}
+                                                        autoComplete="off"
+                                                    />
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    className="captcha-refresh"
+                                                    onClick={loadCaptcha}
+                                                    title="New question"
+                                                >
+                                                    <RefreshCw size={14} />
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
                             )}
 
                             <button
                                 type="submit"
                                 className="auth-submit"
-                                disabled={loading || (isLogin && !captchaToken)}
+                                disabled={loading || (isLogin && !captchaAnswer.trim())}
                             >
                                 {loading ? (
                                     <Loader size={18} className="spin" />

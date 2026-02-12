@@ -164,12 +164,12 @@ router.post('/resend-otp', async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
     try {
-        const { email, password, captchaPayload } = req.body;
+        const { email, password, captchaAnswer, captchaToken } = req.body;
 
-        // Verify ALTCHA captcha FIRST — reject before any DB work
-        const captchaOk = await verifyCaptcha(captchaPayload);
+        // Verify math captcha FIRST — reject before any DB work
+        const captchaOk = verifyCaptcha(captchaAnswer, captchaToken);
         if (!captchaOk) {
-            return res.status(403).json({ error: 'Captcha verification failed. Please try again.' });
+            return res.status(403).json({ error: 'Incorrect answer. Please try again.' });
         }
 
         // Find user by email
