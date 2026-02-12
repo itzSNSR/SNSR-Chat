@@ -810,6 +810,11 @@
         font-size: 1rem;
         font-weight: 600;
     }
+
+    /* Hide desktop menu trigger on mobile */
+    .chat-menu-trigger {
+        display: none !important;
+    }
 }
 
 /* ═══════════════════════════════════════════════
@@ -820,34 +825,65 @@
     position: relative;
     display: flex;
     align-items: center;
+    width: 100%;
+}
+
+.nav-item {
+    width: 100%;
+    padding-right: 32px;
+    /* Space for the menu trigger */
+    position: relative;
+    border-left: 3px solid transparent;
+    /* For active state accent */
+}
+
+.nav-item.active {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-left-color: var(--accent-primary);
+}
+
+.chat-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    display: block;
+    max-width: 100%;
 }
 
 /* Three-dot menu trigger */
 .chat-menu-trigger {
     position: absolute;
     right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
     background: transparent;
     border: none;
     color: var(--text-secondary);
-    padding: 6px;
-    border-radius: 6px;
+    padding: 4px;
+    border-radius: 4px;
     cursor: pointer;
     opacity: 0;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 24px;
+    height: 24px;
+    z-index: 10;
 }
 
 .nav-item-wrapper:hover .chat-menu-trigger,
-.chat-menu-trigger.active {
-    opacity: 1;
-    background: var(--bg-secondary);
+.chat-menu-trigger.active,
+.nav-item.active~.chat-menu-trigger {
+    opacity: 0.6;
 }
 
 .chat-menu-trigger:hover {
-    background: var(--bg-tertiary);
+    background: var(--bg-secondary);
     color: var(--text-primary);
+    opacity: 1 !important;
 }
 
 .sidebar.collapsed .chat-menu-trigger {
@@ -865,10 +901,22 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     padding: 4px;
     z-index: 100;
-    min-width: 120px;
+    min-width: 140px;
     display: flex;
     flex-direction: column;
     gap: 2px;
+    animation: fadeIn 0.1s ease-out;
+}
+
+/* Desktop User Profile Refinements */
+.user-email {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+.user-profile:hover .user-email {
+    opacity: 0.8;
 }
 
 .chat-context-menu button {
