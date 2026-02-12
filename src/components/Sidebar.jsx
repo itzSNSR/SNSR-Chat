@@ -55,10 +55,68 @@ const Sidebar = ({
 
     // Close menu when clicking outside
     React.useEffect(() => {
-        const handleClickOutside = () => setActiveMenuChatId(null);
+        const handleClickOutside = () => {
+            setActiveMenuChatId(null);
+            if (!mobileSidebarOpen) {
+                // Only reset active mobile menu if sidebar is also closed or specific logic needed
+                // For now, let's keep mobile menu separate state
+            }
+        };
         document.addEventListener('click', handleClickOutside);
         return () => document.removeEventListener('click', handleClickOutside);
-    }, []);
+    }, [mobileSidebarOpen]);
+
+    // Long Press Hook Logic
+    const useLongPress = (callback = () => { }, ms = 500) => {
+        const [startLongPress, setStartLongPress] = useState(false);
+
+        React.useEffect(() => {
+            let timerId;
+            if (startLongPress) {
+                timerId = setTimeout(callback, ms);
+            } else {
+                clearTimeout(timerId);
+            }
+
+            return () => {
+                clearTimeout(timerId);
+            };
+        }, [startLongPress, callback, ms]);
+
+        return {
+            onMouseDown: () => setStartLongPress(true),
+            onMouseUp: () => setStartLongPress(false),
+            onMouseLeave: () => setStartLongPress(false),
+            onTouchStart: () => setStartLongPress(true),
+            onTouchEnd: () => setStartLongPress(false),
+        };
+    };
+
+    const [activeMobileMenuChatId, setActiveMobileMenuChatId] = useState(null);
+
+    const handleLongPress = (chatId) => {
+        // Vibrate to indicate success (if supported)
+        if (navigator.vibrate) navigator.vibrate(50);
+        setActiveMobileMenuChatId(chatId);
+    };
+
+    const longPressEvent = (chatId) => {
+        // We need a factory for the hook to capture chatId? 
+        // Hooks can't be called inside loops. 
+        // We'll use a simpler event handler approach for the list items.
+        // Actually, let's just use standard events on the button directly.
+    }
+
+    // Better Long Press Helper without Hook violations:
+    const handleTouchStart = (chatId) => {
+        window.longPressTimer = setTimeout(() => {
+            handleLongPress(chatId);
+        }, 500);
+    };
+
+    const handleTouchEnd = () => {
+        clearTimeout(window.longPressTimer);
+    };
 
     return (
         <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''} ${mobileSidebarOpen ? 'mobile-open' : ''}`}>
@@ -103,6 +161,9 @@ const Sidebar = ({
                                 className={`nav-item ${currentChatId === chat.chatId ? 'active' : ''}`}
                                 onClick={() => onSelectChat(chat.chatId)}
                                 onContextMenu={(e) => toggleChatMenu(e, chat.chatId)}
+                                onTouchStart={() => handleTouchStart(chat.chatId)}
+                                onTouchEnd={handleTouchEnd}
+                                onTouchMove={handleTouchEnd} // Cancel on scroll
                                 title={chat.title}
                             >
                                 <MessageSquare size={16} />
@@ -158,6 +219,9 @@ const Sidebar = ({
                                             className={`nav-item ${currentChatId === chat.chatId ? 'active' : ''}`}
                                             onClick={() => onSelectChat(chat.chatId)}
                                             onContextMenu={(e) => toggleChatMenu(e, chat.chatId)}
+                                            onTouchStart={() => handleTouchStart(chat.chatId)}
+                                            onTouchEnd={handleTouchEnd}
+                                            onTouchMove={handleTouchEnd}
                                             title={chat.title}
                                         >
                                             <Box size={16} />
@@ -305,6 +369,41 @@ const Sidebar = ({
                     </div>
                 )}
             </div>
+
+            {/* Mobile Bottom Sheet Menu */}
+            {activeMobileMenuChatId && (
+                <>
+                    <div className="mobile-menu-overlay" onClick={() => setActiveMobileMenuChatId(null)} />
+                    <div className="mobile-bottom-sheet">
+                        <div className="mobile-sheet-header">
+                            <span className="sheet-title">Chat Options</span>
+                            <div className="sheet-handle"></div>
+                        </div>
+                        <div className="mobile-sheet-content">
+                            {archivedChats.find(c => c.chatId === activeMobileMenuChatId) ? (
+                                <button className="mobile-sheet-item" onClick={() => { onUnarchiveChat(activeMobileMenuChatId); setActiveMobileMenuChatId(null); }}>
+                                    <RotateCcw size={20} />
+                                    <span>Unarchive Chat</span>
+                                </button>
+                            ) : (
+                                <button className="mobile-sheet-item" onClick={() => { onArchiveChat(activeMobileMenuChatId); setActiveMobileMenuChatId(null); }}>
+                                    <Archive size={20} />
+                                    <span>Archive Chat</span>
+                                </button>
+                            )}
+
+                            <button className="mobile-sheet-item text-danger" onClick={() => { onDeleteChat(activeMobileMenuChatId); setActiveMobileMenuChatId(null); }}>
+                                <Trash2 size={20} />
+                                <span>Delete Chat</span>
+                            </button>
+
+                            <button className="mobile-sheet-item cancel-btn" onClick={() => setActiveMobileMenuChatId(null)}>
+                                <span>Cancel</span>
+                            </button>
+                        </div>
+                    </div>
+                </>
+            )}
         </aside>
     );
 };
