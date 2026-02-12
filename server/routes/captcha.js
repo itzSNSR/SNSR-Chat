@@ -2,22 +2,16 @@ import express from 'express';
 
 const router = express.Router();
 
-const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY;
+const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY || '0x4AAAAAACa89dFd-LHl7oIgckjcuHOJHQU';
 
 // Verify Cloudflare Turnstile token
 export const verifyCaptcha = async (token) => {
     if (!token) return false;
 
-    const secret = TURNSTILE_SECRET || process.env.TURNSTILE_SECRET_KEY;
-    if (!secret) {
-        console.error('TURNSTILE_SECRET_KEY not set in environment');
-        return false;
-    }
-
     try {
         // Use form-urlencoded (Cloudflare's preferred format)
         const formData = new URLSearchParams();
-        formData.append('secret', secret);
+        formData.append('secret', TURNSTILE_SECRET);
         formData.append('response', token);
 
         const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
