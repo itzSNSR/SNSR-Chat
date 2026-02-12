@@ -2,13 +2,17 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import authRoutes from './routes/auth.js';
 import chatRoutes from './routes/chats.js';
 import geminiRoutes from './routes/gemini.js';
 import ocrRoutes from './routes/ocr.js';
 import captchaRoutes from './routes/captcha.js';
 
-dotenv.config();
+// Load .env from the server directory (works on both local and Vercel)
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 const app = express();
 

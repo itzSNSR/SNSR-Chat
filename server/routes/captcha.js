@@ -8,19 +8,33 @@ const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY;
 export const verifyCaptcha = async (token) => {
     if (!token) return false;
 
+    const secret = TURNSTILE_SECRET || process.env.TURNSTILE_SECRET_KEY;
+    if (!secret) {
+        console.error('TURNSTILE_SECRET_KEY not set in environment');
+        return false;
+    }
+
     try {
+        // Use form-urlencoded (Cloudflare's preferred format)
+        const formData = new URLSearchParams();
+        formData.append('secret', secret);
+        formData.append('response', token);
+
         const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                secret: TURNSTILE_SECRET,
-                response: token,
-            }),
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData.toString(),
         });
 
         const data = await res.json();
+
+        if (!data.success) {
+            console.error('Turnstile verification failed:', data['error-codes']);
+        }
+
         return data.success === true;
-    } catch {
+    } catch (err) {
+        console.error('Turnstile fetch error:', err);
         return false;
     }
 };
