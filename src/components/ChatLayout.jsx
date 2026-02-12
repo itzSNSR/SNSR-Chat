@@ -118,6 +118,49 @@ const ChatLayout = () => {
         }
     };
 
+    const handleArchiveChat = async (chatId) => {
+        try {
+            await chatAPI.archive(chatId);
+            setChatHistory(prev => prev.map(chat =>
+                chat.chatId === chatId ? { ...chat, isArchived: true } : chat
+            ));
+            if (currentChatId === chatId) {
+                setMessages([]);
+                setCurrentChatId(null);
+            }
+        } catch (error) {
+            console.error('Failed to archive chat:', error);
+        }
+    };
+
+    const handleUnarchiveChat = async (chatId) => {
+        try {
+            await chatAPI.unarchive(chatId);
+            setChatHistory(prev => prev.map(chat =>
+                chat.chatId === chatId ? { ...chat, isArchived: false } : chat
+            ));
+        } catch (error) {
+            console.error('Failed to unarchive chat:', error);
+        }
+    };
+
+    const handleDeleteChat = async (chatId) => {
+        if (!window.confirm("Are you sure you want to delete this chat permanently? This action cannot be undone.")) {
+            return;
+        }
+
+        try {
+            await chatAPI.delete(chatId);
+            setChatHistory(prev => prev.filter(chat => chat.chatId !== chatId));
+            if (currentChatId === chatId) {
+                setMessages([]);
+                setCurrentChatId(null);
+            }
+        } catch (error) {
+            console.error('Failed to delete chat:', error);
+        }
+    };
+
     const handleSendMessage = async (text, file = null) => {
         // Check anonymous message limit
         if (!user) {
@@ -273,6 +316,9 @@ const ChatLayout = () => {
                 onLogout={handleLogout}
                 onOpenAuth={() => setShowAuthModal(true)}
                 onExploreCafe={() => { setShowChatCafe(true); setMobileSidebarOpen(false); }}
+                onArchiveChat={handleArchiveChat}
+                onUnarchiveChat={handleUnarchiveChat}
+                onDeleteChat={handleDeleteChat}
             />
 
             {showChatCafe ? (

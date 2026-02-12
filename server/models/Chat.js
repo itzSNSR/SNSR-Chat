@@ -42,9 +42,9 @@ const chatSchema = new mongoose.Schema({
         default: null
     },
     messages: [messageSchema],
-    modelUsed: {
-        type: String,
-        default: 'gemini-3-flash-preview'
+    isArchived: {
+        type: Boolean,
+        default: false
     },
     createdAt: {
         type: Date,

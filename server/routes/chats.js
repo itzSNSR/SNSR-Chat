@@ -46,7 +46,7 @@ router.get('/', async (req, res) => {
         }
         const chats = await Chat.find({ ownerId: req.userId })
             .sort({ updatedAt: -1 })
-            .select('chatId title messages updatedAt modelUsed');
+            .select('chatId title messages updatedAt modelUsed isArchived');
         res.json({ chats });
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch chats' });
@@ -138,6 +138,64 @@ router.put('/:chatId/claim', async (req, res) => {
         res.json({ chat });
     } catch (error) {
         res.status(500).json({ error: 'Failed to claim chat' });
+    }
+});
+
+// Archive a chat
+router.put('/:chatId/archive', async (req, res) => {
+    try {
+        if (!req.userId) {
+            return res.status(401).json({ error: 'Login required' });
+        }
+
+        const chat = await Chat.findOne({ chatId: req.params.chatId, ownerId: req.userId });
+        if (!chat) {
+            return res.status(404).json({ error: 'Chat not found' });
+        }
+
+        chat.isArchived = true;
+        await chat.save();
+        res.json({ chat });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to archive chat' });
+    }
+});
+
+// Unarchive a chat
+router.put('/:chatId/unarchive', async (req, res) => {
+    try {
+        if (!req.userId) {
+            return res.status(401).json({ error: 'Login required' });
+        }
+
+        const chat = await Chat.findOne({ chatId: req.params.chatId, ownerId: req.userId });
+        if (!chat) {
+            return res.status(404).json({ error: 'Chat not found' });
+        }
+
+        chat.isArchived = false;
+        await chat.save();
+        res.json({ chat });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to unarchive chat' });
+    }
+});
+
+// Delete a chat
+router.delete('/:chatId', async (req, res) => {
+    try {
+        if (!req.userId) {
+            return res.status(401).json({ error: 'Login required' });
+        }
+
+        const chat = await Chat.findOneAndDelete({ chatId: req.params.chatId, ownerId: req.userId });
+        if (!chat) {
+            return res.status(404).json({ error: 'Chat not found' });
+        }
+
+        res.json({ message: 'Chat deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to delete chat' });
     }
 });
 

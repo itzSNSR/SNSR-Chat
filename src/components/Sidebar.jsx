@@ -14,7 +14,11 @@ import {
     Shield,
     Bug,
     Download,
-    Box
+    Box,
+    Archive,
+    Trash2,
+    MoreVertical,
+    RotateCcw
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -30,10 +34,31 @@ const Sidebar = ({
     currentChatId,
     onLogout,
     onOpenAuth,
-    onExploreCafe
+    onExploreCafe,
+    onArchiveChat,
+    onUnarchiveChat,
+    onDeleteChat
 }) => {
     const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
     const [showHelpSubmenu, setShowHelpSubmenu] = useState(false);
+    const [showArchived, setShowArchived] = useState(false);
+    const [activeMenuChatId, setActiveMenuChatId] = useState(null);
+
+    const recentChats = chatHistory.filter(chat => !chat.isArchived);
+    const archivedChats = chatHistory.filter(chat => chat.isArchived);
+
+    const toggleChatMenu = (e, chatId) => {
+        e.stopPropagation();
+        e.preventDefault();
+        setActiveMenuChatId(activeMenuChatId === chatId ? null : chatId);
+    };
+
+    // Close menu when clicking outside
+    React.useEffect(() => {
+        const handleClickOutside = () => setActiveMenuChatId(null);
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, []);
 
     return (
         <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''} ${mobileSidebarOpen ? 'mobile-open' : ''}`}>
@@ -69,23 +94,105 @@ const Sidebar = ({
             <nav className="sidebar-nav">
                 {!isCollapsed && <div className="nav-label">Recent Chats</div>}
 
-                {chatHistory.length === 0 ? (
-                    !isCollapsed && <p className="no-chats">No chats yet</p>
+                {recentChats.length === 0 ? (
+                    !isCollapsed && <p className="no-chats">No recent chats</p>
                 ) : (
-                    chatHistory.slice(0, 10).map(chat => (
-                        <button
-                            key={chat.chatId}
-                            className={`nav-item ${currentChatId === chat.chatId ? 'active' : ''}`}
-                            onClick={() => onSelectChat(chat.chatId)}
-                            title={chat.title}
-                        >
-                            <MessageSquare size={16} />
+                    recentChats.slice(0, 10).map(chat => (
+                        <div key={chat.chatId} className="nav-item-wrapper">
+                            <button
+                                className={`nav-item ${currentChatId === chat.chatId ? 'active' : ''}`}
+                                onClick={() => onSelectChat(chat.chatId)}
+                                onContextMenu={(e) => toggleChatMenu(e, chat.chatId)}
+                                title={chat.title}
+                            >
+                                <MessageSquare size={16} />
+                                {!isCollapsed && (
+                                    <span className="chat-title">{chat.title || 'New Chat'}</span>
+                                )}
+                            </button>
+
+                            {/* Hover Menu Trigger (Desktop) */}
                             {!isCollapsed && (
-                                <span className="chat-title">{chat.title || 'New Chat'}</span>
+                                <button
+                                    className={`chat-menu-trigger ${activeMenuChatId === chat.chatId ? 'active' : ''}`}
+                                    onClick={(e) => toggleChatMenu(e, chat.chatId)}
+                                >
+                                    <MoreVertical size={14} />
+                                </button>
                             )}
-                        </button>
+
+                            {/* Context Menu */}
+                            {activeMenuChatId === chat.chatId && (
+                                <div className="chat-context-menu">
+                                    <button onClick={(e) => { e.stopPropagation(); onArchiveChat(chat.chatId); setActiveMenuChatId(null); }}>
+                                        <Archive size={14} /> Archive
+                                    </button>
+                                    <button onClick={(e) => { e.stopPropagation(); onDeleteChat(chat.chatId); setActiveMenuChatId(null); }} className="text-danger">
+                                        <Trash2 size={14} /> Delete
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     ))
                 )}
+
+                {/* Archived Section Toggle */}
+                <div className="archived-section">
+                    <button
+                        className={`nav-item archived-toggle ${showArchived ? 'active' : ''}`}
+                        onClick={() => setShowArchived(!showArchived)}
+                    >
+                        <Archive size={16} />
+                        {!isCollapsed && <span>Archived Chats ({archivedChats.length})</span>}
+                        {!isCollapsed && (showArchived ? <ChevronRight size={14} style={{ transform: 'rotate(90deg)' }} /> : <ChevronRight size={14} />)}
+                    </button>
+
+                    {showArchived && (
+                        <div className="archived-list">
+                            {archivedChats.length === 0 ? (
+                                !isCollapsed && <p className="no-chats">No archived chats</p>
+                            ) : (
+                                archivedChats.map(chat => (
+                                    <div key={chat.chatId} className="nav-item-wrapper">
+                                        <button
+                                            className={`nav-item ${currentChatId === chat.chatId ? 'active' : ''}`}
+                                            onClick={() => onSelectChat(chat.chatId)}
+                                            onContextMenu={(e) => toggleChatMenu(e, chat.chatId)}
+                                            title={chat.title}
+                                        >
+                                            <Box size={16} />
+                                            {!isCollapsed && (
+                                                <span className="chat-title">{chat.title || 'Archived Chat'}</span>
+                                            )}
+                                        </button>
+
+                                        {/* Hover Menu Trigger */}
+                                        {!isCollapsed && (
+                                            <button
+                                                className={`chat-menu-trigger ${activeMenuChatId === chat.chatId ? 'active' : ''}`}
+                                                onClick={(e) => toggleChatMenu(e, chat.chatId)}
+                                            >
+                                                <MoreVertical size={14} />
+                                            </button>
+                                        )}
+
+                                        {/* Context Menu */}
+                                        {activeMenuChatId === chat.chatId && (
+                                            <div className="chat-context-menu">
+                                                <button onClick={(e) => { e.stopPropagation(); onUnarchiveChat(chat.chatId); setActiveMenuChatId(null); }}>
+                                                    <RotateCcw size={14} /> Unarchive
+                                                </button>
+                                                <button onClick={(e) => { e.stopPropagation(); onDeleteChat(chat.chatId); setActiveMenuChatId(null); }} className="text-danger">
+                                                    <Trash2 size={14} /> Delete
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
+                </div>
             </nav>
 
             <div className="sidebar-footer">

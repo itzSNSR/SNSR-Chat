@@ -40,7 +40,10 @@ export const chatAPI = {
     getOne: (chatId) => api.get(`/api/chats/${chatId}`),
     addMessage: (chatId, message) => api.put(`/api/chats/${chatId}/message`, { message }),
     fork: (chatId) => api.post(`/api/chats/${chatId}/fork`),
-    claim: (chatId) => api.put(`/api/chats/${chatId}/claim`)
+    claim: (chatId) => api.put(`/api/chats/${chatId}/claim`),
+    archive: (chatId) => api.put(`/api/chats/${chatId}/archive`),
+    unarchive: (chatId) => api.put(`/api/chats/${chatId}/unarchive`),
+    delete: (chatId) => api.delete(`/api/chats/${chatId}`)
 };
 
 // Gemini API (through backend proxy)
