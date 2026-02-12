@@ -60,11 +60,6 @@ export const ocrAPI = {
     }
 };
 
-// Captcha API (ALTCHA proof-of-work)
-export const captchaAPI = {
-    getChallenge: () => api.get('/api/captcha/challenge')
-};
-
 // Helper functions
 export const saveAuth = (token, user) => {
     localStorage.setItem('token', token);

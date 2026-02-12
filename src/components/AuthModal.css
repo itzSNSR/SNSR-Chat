@@ -166,17 +166,12 @@
     color: var(--text-primary);
 }
 
-/* ─── ALTCHA Captcha ─── */
+/* ─── Cloudflare Turnstile ─── */
 .captcha-wrapper {
     margin: 4px 0 0;
     border-radius: var(--radius-lg);
     overflow: hidden;
     animation: fadeIn 0.3s ease;
-}
-
-.captcha-wrapper altcha-widget {
-    display: block;
-    width: 100%;
 }
 
 .captcha-loading {

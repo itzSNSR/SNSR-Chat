@@ -3,8 +3,8 @@ import { X, User, Mail, Lock, Eye, EyeOff, LogIn, UserPlus, Loader, KeyRound, Re
 import { authAPI, saveAuth } from '../services/api';
 import './AuthModal.css';
 
-// API URL for ALTCHA challenge endpoint
-const API_URL = import.meta.env.VITE_API_URL || '';
+// Turnstile site key
+const TURNSTILE_SITE_KEY = '0x4AAAAAACa89XDfGYfGumbE';
 
 const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
     const [isLogin, setIsLogin] = useState(true);
@@ -13,10 +13,11 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    // ALTCHA captcha state
-    const [captchaPayload, setCaptchaPayload] = useState(null);
-    const [captchaReady, setCaptchaReady] = useState(false);
-    const altchaRef = useRef(null);
+    // Turnstile captcha state
+    const [captchaToken, setCaptchaToken] = useState(null);
+    const [turnstileReady, setTurnstileReady] = useState(false);
+    const turnstileContainerRef = useRef(null);
+    const turnstileWidgetId = useRef(null);
 
     // OTP verification state
     const [step, setStep] = useState('form'); // 'form' | 'otp'
@@ -31,40 +32,66 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
         password: ''
     });
 
-    // Load ALTCHA widget script
+    // Load Turnstile script
     useEffect(() => {
-        if (document.querySelector('script[data-altcha]')) {
-            setCaptchaReady(true);
+        if (window.turnstile) {
+            setTurnstileReady(true);
             return;
         }
 
+        if (document.querySelector('script[data-turnstile]')) return;
+
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/altcha/dist/altcha.min.js';
+        script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileReady';
         script.async = true;
         script.defer = true;
-        script.type = 'module';
-        script.setAttribute('data-altcha', 'true');
-        script.onload = () => setCaptchaReady(true);
+        script.setAttribute('data-turnstile', 'true');
         document.head.appendChild(script);
-    }, []);
 
-    // Listen for ALTCHA verification events
-    useEffect(() => {
-        const widget = altchaRef.current;
-        if (!widget) return;
-
-        const handleStateChange = (e) => {
-            if (e.detail?.state === 'verified' && e.detail?.payload) {
-                setCaptchaPayload(e.detail.payload);
-                setError('');
-            } else if (e.detail?.state === 'error') {
-                setCaptchaPayload(null);
-            }
+        window.onTurnstileReady = () => {
+            setTurnstileReady(true);
         };
 
-        widget.addEventListener('statechange', handleStateChange);
-        return () => widget.removeEventListener('statechange', handleStateChange);
-    }, [captchaReady, isLogin, step]);
+        return () => {
+            delete window.onTurnstileReady;
+        };
+    }, []);
+
+    // Render Turnstile widget when ready and in login mode
+    useEffect(() => {
+        if (!turnstileReady || !isLogin || step !== 'form' || !turnstileContainerRef.current) return;
+        if (!window.turnstile) return;
+
+        // Clean up previous widget
+        if (turnstileWidgetId.current !== null) {
+            try { window.turnstile.remove(turnstileWidgetId.current); } catch { }
+            turnstileWidgetId.current = null;
+        }
+
+        // Render new widget
+        turnstileWidgetId.current = window.turnstile.render(turnstileContainerRef.current, {
+            sitekey: TURNSTILE_SITE_KEY,
+            theme: 'dark',
+            size: 'flexible',
+            callback: (token) => {
+                setCaptchaToken(token);
+                setError('');
+            },
+            'error-callback': () => {
+                setCaptchaToken(null);
+            },
+            'expired-callback': () => {
+                setCaptchaToken(null);
+            },
+        });
+
+        return () => {
+            if (turnstileWidgetId.current !== null) {
+                try { window.turnstile.remove(turnstileWidgetId.current); } catch { }
+                turnstileWidgetId.current = null;
+            }
+        };
+    }, [turnstileReady, isLogin, step]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -102,15 +129,9 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
     };
 
     const resetCaptcha = useCallback(() => {
-        setCaptchaPayload(null);
-        // Reset the ALTCHA widget by removing and re-adding it
-        if (altchaRef.current) {
-            try {
-                // The widget re-fetches challenge when reset
-                altchaRef.current.reset?.();
-            } catch {
-                // Fallback: will re-render naturally
-            }
+        setCaptchaToken(null);
+        if (window.turnstile && turnstileWidgetId.current !== null) {
+            try { window.turnstile.reset(turnstileWidgetId.current); } catch { }
         }
     }, []);
 
@@ -122,8 +143,8 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
         try {
             if (isLogin) {
                 // Require captcha for login
-                if (!captchaPayload) {
-                    setError('Please complete the security check first');
+                if (!captchaToken) {
+                    setError('Please complete the security check');
                     setLoading(false);
                     return;
                 }
@@ -131,7 +152,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
                 const res = await authAPI.login({
                     email: formData.email,
                     password: formData.password,
-                    captchaPayload: captchaPayload
+                    captchaPayload: captchaToken
                 });
 
                 saveAuth(res.data.token, res.data.user);
@@ -151,7 +172,6 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
                 }
             }
         } catch (err) {
-            // Handle unverified user trying to login
             if (err.response?.data?.requiresVerification) {
                 setPendingUser({
                     userId: err.response.data.userId,
@@ -162,7 +182,6 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
             } else {
                 setError(err.response?.data?.error || 'Something went wrong');
             }
-            // Reset captcha on error so user can retry
             resetCaptcha();
         } finally {
             setLoading(false);
@@ -214,7 +233,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
         setPendingUser(null);
         setOtp(['', '', '', '', '', '']);
         setFormData({ fullName: '', username: '', email: '', password: '' });
-        resetCaptcha();
+        setCaptchaToken(null);
     };
 
     const resetToForm = () => {
@@ -310,23 +329,11 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
                                 </button>
                             </div>
 
-                            {/* ALTCHA Captcha Widget — Login only */}
+                            {/* Cloudflare Turnstile — Login only */}
                             {isLogin && (
                                 <div className="captcha-wrapper">
-                                    {captchaReady ? (
-                                        <altcha-widget
-                                            ref={altchaRef}
-                                            challengeurl={`${API_URL}/api/captcha/challenge`}
-                                            hidefooter
-                                            style={{
-                                                '--altcha-max-width': '100%',
-                                                '--altcha-color-base': 'var(--bg-tertiary)',
-                                                '--altcha-color-border': 'var(--border-subtle)',
-                                                '--altcha-color-text': 'var(--text-primary)',
-                                                '--altcha-color-border-focus': 'var(--accent-primary)',
-                                            }}
-                                        ></altcha-widget>
-                                    ) : (
+                                    <div ref={turnstileContainerRef}></div>
+                                    {!turnstileReady && (
                                         <div className="captcha-loading">
                                             <Loader size={14} className="spin" />
                                             <span>Loading security check...</span>
@@ -338,7 +345,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
                             <button
                                 type="submit"
                                 className="auth-submit"
-                                disabled={loading || (isLogin && !captchaPayload)}
+                                disabled={loading || (isLogin && !captchaToken)}
                             >
                                 {loading ? (
                                     <Loader size={18} className="spin" />
