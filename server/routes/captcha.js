@@ -1,34 +1,35 @@
 import express from 'express';
+import axios from 'axios';
 
 const router = express.Router();
 
-const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY || '0x4AAAAAACa89dFd-LHl7oIgckjcuHOJHQU';
+const TURNSTILE_SECRET = '0x4AAAAAACa89dFd-LHl7oIgckjcuHOJHQU';
 
-// Verify Cloudflare Turnstile token
+// Verify Cloudflare Turnstile token using axios (guaranteed Vercel compat)
 export const verifyCaptcha = async (token) => {
-    if (!token) return false;
+    if (!token) {
+        console.error('Turnstile: No token provided');
+        return false;
+    }
 
     try {
-        // Use form-urlencoded (Cloudflare's preferred format)
-        const formData = new URLSearchParams();
-        formData.append('secret', TURNSTILE_SECRET);
-        formData.append('response', token);
+        const { data } = await axios.post(
+            'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+            JSON.stringify({
+                secret: TURNSTILE_SECRET,
+                response: token,
+            }),
+            {
+                headers: { 'Content-Type': 'application/json' },
+                timeout: 10000,
+            }
+        );
 
-        const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: formData.toString(),
-        });
-
-        const data = await res.json();
-
-        if (!data.success) {
-            console.error('Turnstile verification failed:', data['error-codes']);
-        }
+        console.log('Turnstile verify response:', JSON.stringify(data));
 
         return data.success === true;
     } catch (err) {
-        console.error('Turnstile fetch error:', err);
+        console.error('Turnstile verify error:', err.message);
         return false;
     }
 };
@@ -45,7 +46,7 @@ router.post('/verify', async (req, res) => {
         const ok = await verifyCaptcha(token);
         res.json({ verified: ok });
     } catch (error) {
-        console.error('Turnstile verify error:', error);
+        console.error('Turnstile verify route error:', error);
         res.status(400).json({ error: 'Captcha verification failed', verified: false });
     }
 });
