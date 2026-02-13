@@ -25,7 +25,7 @@ app.use(cors({
 app.use(express.json());
 
 // Database Connection (Cached for Serverless)
-let isConnected = false;
+let cachedPromise = null;
 
 const connectDB = async () => {
     if (isConnected) return;
@@ -38,13 +38,27 @@ const connectDB = async () => {
         }
     }
 
+    if (!cachedPromise) {
+        const opts = {
+            bufferCommands: false, // Vital for serverless! Fail fast if no connection.
+        };
+
+        cachedPromise = mongoose.connect(process.env.MONGODB_URI, opts).then((mongoose) => {
+            isConnected = true;
+            console.log('✅ MongoDB Connected');
+            return mongoose;
+        }).catch((error) => {
+            console.error('❌ MongoDB Connection Error:', error);
+            cachedPromise = null; // Reset promise on failure
+            throw error;
+        });
+    }
+
     try {
-        await mongoose.connect(process.env.MONGODB_URI);
-        isConnected = true;
-        console.log('✅ MongoDB Connected');
-    } catch (error) {
-        console.error('❌ MongoDB Connection Error:', error);
-        throw error;
+        await cachedPromise;
+    } catch (e) {
+        cachedPromise = null;
+        throw e;
     }
 };
 
