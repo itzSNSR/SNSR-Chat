@@ -163,71 +163,7 @@ router.post('/resend-otp', async (req, res) => {
     }
 });
 
-// Forgot Password - Send OTP
-router.post('/forgot-password', async (req, res) => {
-    try {
-        const { email } = req.body;
-        const user = await User.findOne({ email: email.toLowerCase() });
 
-        if (!user) {
-            // Security best practice: Don't reveal if email exists
-            return res.json({ message: 'If that email exists, we sent you a code.' });
-        }
-
-        // Generate OTP
-        const otp = generateOTP();
-
-        // Hash OTP before saving
-        const salt = crypto.randomBytes(16).toString('hex'); // Not needed for simple comparison if we just hash the OTP directly, but let's stick to simple sha256 of the OTP string as per plan
-        // Actually, just sha256(otp) is fine for short lived OTPs
-        const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
-
-        user.resetOtpHash = otpHash;
-        user.resetOtpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
-        await user.save();
-
-        // Send Email
-        await sendPasswordResetEmail(user.email, otp, user.fullName);
-
-        res.json({ message: 'If that email exists, we sent you a code.' });
-    } catch (error) {
-        console.error('Forgot password error:', error);
-        res.status(500).json({ error: 'Failed to process request' });
-    }
-});
-
-// Reset Password - Verify OTP and Set New Password
-router.post('/reset-password', async (req, res) => {
-    try {
-        const { email, otp, newPassword } = req.body;
-
-        const user = await User.findOne({
-            email: email.toLowerCase(),
-            resetOtpExpires: { $gt: Date.now() } // Check expiry in query
-        });
-
-        if (!user) {
-            return res.status(400).json({ error: 'Invalid or expired OTP' });
-        }
-
-        // Verify OTP Hash
-        const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
-        if (otpHash !== user.resetOtpHash) {
-            return res.status(400).json({ error: 'Invalid OTP' });
-        }
-
-        // Set new password
-        user.password = newPassword; // Will be hashed by pre-save hook
-        user.resetOtpHash = null;
-        user.resetOtpExpires = null;
-        await user.save();
-
-        res.json({ message: 'Password reset successful! You can now login.' });
-    } catch (error) {
-        console.error('Reset password error:', error);
-        res.status(500).json({ error: 'Failed to reset password' });
-    }
-});
 
 // Login
 router.post('/login', async (req, res) => {

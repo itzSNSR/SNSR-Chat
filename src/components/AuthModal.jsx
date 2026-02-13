@@ -197,64 +197,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
         }
     };
 
-    const handleForgotPassword = async (e) => {
-        e.preventDefault();
-        if (!formData.email) {
-            setError('Please enter your email');
-            return;
-        }
 
-        setLoading(true);
-        setError('');
-        setSuccess('');
-
-        try {
-            const res = await authAPI.forgotPassword(formData.email);
-            setSuccess(res.data?.message || 'Code sent');
-            setStep('forgot-reset');
-            setOtp(['', '', '', '', '', '']); // Reset OTP inputs
-        } catch (err) {
-            setError(err.response?.data?.error || err.message || 'Failed to send reset code');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleResetPassword = async (e) => {
-        e.preventDefault();
-        const otpString = otp.join('');
-
-        if (otpString.length !== 6) {
-            setError('Please enter the 6-digit code');
-            return;
-        }
-
-        if (formData.password.length < 6) {
-            setError('Password must be at least 6 characters');
-            return;
-        }
-
-        setLoading(true);
-        setError('');
-        setSuccess('');
-
-        try {
-            const res = await authAPI.resetPassword(formData.email, otpString, formData.password);
-
-            // Success! Switch back to login
-            setSuccess(res.data?.message || 'Password reset successful');
-            setTimeout(() => {
-                setIsLogin(true);
-                setStep('form');
-                // Keep email filled for convenience, clear password
-                setFormData(prev => ({ ...prev, password: '' }));
-            }, 2000);
-        } catch (err) {
-            setError(err.response?.data?.error || err.message || 'Failed to reset password');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const switchMode = () => {
         setIsLogin(!isLogin);
@@ -362,21 +305,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
                                 </button>
                             </div>
 
-                            {/* Forgot Password Link - Only for Login */}
-                            {isLogin && (
-                                <div className="forgot-password-link">
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setStep('forgot-email');
-                                            setError('');
-                                            setSuccess('');
-                                        }}
-                                    >
-                                        Forgot Password?
-                                    </button>
-                                </div>
-                            )}
+
 
                             {/* Math Captcha — Login only */}
                             {isLogin && (

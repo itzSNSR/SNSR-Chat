@@ -39,14 +39,7 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
-    resetOtpHash: {
-        type: String,
-        default: null
-    },
-    resetOtpExpires: {
-        type: Date,
-        default: null
-    },
+
     createdAt: {
         type: Date,
         default: Date.now

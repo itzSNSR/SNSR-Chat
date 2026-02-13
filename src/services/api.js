@@ -47,8 +47,6 @@ export const authAPI = {
         localStorage.removeItem('user');
         return api.post('/api/auth/logout');
     },
-    forgotPassword: (email) => api.post('/api/auth/forgot-password', { email }),
-    resetPassword: (email, otp, newPassword) => api.post('/api/auth/reset-password', { email, otp, newPassword }),
     getMe: () => api.get('/api/auth/me')
 };
 
