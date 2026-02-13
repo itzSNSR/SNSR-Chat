@@ -63,9 +63,10 @@ const ChatLayout = () => {
     const loadChatHistory = async () => {
         try {
             const res = await chatAPI.getAll();
-            setChatHistory(res.data.chats || []);
+            setChatHistory(res.data?.chats || []);
         } catch (error) {
             console.error('Failed to load chat history:', error);
+            setChatHistory([]); // Fallback to empty array
         }
     };
 
@@ -87,7 +88,10 @@ const ChatLayout = () => {
     };
 
     const handleLogout = async () => {
-        await authAPI.logout();
+        try {
+            await authAPI.logout();
+        } catch (e) { console.error(e); }
+
         setUser(null);
         setMessages([]);
         setCurrentChatId(null);
@@ -101,7 +105,9 @@ const ChatLayout = () => {
         setMessages([]);
         try {
             const res = await chatAPI.create(selectedModel);
-            setCurrentChatId(res.data.chat.chatId);
+            if (res.data?.chat?.chatId) {
+                setCurrentChatId(res.data.chat.chatId);
+            }
         } catch (error) {
             console.error('Failed to create chat:', error);
         }
@@ -110,9 +116,11 @@ const ChatLayout = () => {
     const loadChat = async (chatId) => {
         try {
             const res = await chatAPI.getOne(chatId);
-            setMessages(res.data.chat.messages || []);
-            setCurrentChatId(chatId);
-            setSelectedModel(res.data.chat.modelUsed || MODELS[0].id);
+            if (res.data?.chat) {
+                setMessages(res.data.chat.messages || []);
+                setCurrentChatId(chatId);
+                setSelectedModel(res.data.chat.modelUsed || MODELS[0].id);
+            }
         } catch (error) {
             console.error('Failed to load chat:', error);
         }
@@ -176,9 +184,12 @@ const ChatLayout = () => {
         if (!currentChatId) {
             try {
                 const res = await chatAPI.create(selectedModel);
-                setCurrentChatId(res.data.chat.chatId);
+                if (res.data?.chat?.chatId) {
+                    setCurrentChatId(res.data.chat.chatId);
+                }
             } catch (error) {
                 console.error('Failed to create chat:', error);
+                // Continue locally even if save fails, but don't crash
             }
         }
 
@@ -207,8 +218,11 @@ const ChatLayout = () => {
 
             try {
                 const ocrRes = await ocrAPI.extract(file);
-                const extractedText = ocrRes.data.text;
-                const pageCount = ocrRes.data.pages;
+                // Safe access
+                const extractedText = ocrRes.data?.text || '';
+                const pageCount = ocrRes.data?.pages || 1;
+
+                if (!extractedText) throw new Error('No text found in file');
 
                 // Build the prompt for Gemini with extracted text
                 finalPrompt = `The user uploaded a file: "${file.name}" (${pageCount} page${pageCount > 1 ? 's' : ''}).\n\nHere is the extracted text from the file:\n\n---\n${extractedText}\n---\n\n${text ? `The user's question about this file: ${text}` : 'Please analyze and explain the content of this file in detail.'}`;
@@ -252,18 +266,22 @@ const ChatLayout = () => {
         try {
             const res = await geminiAPI.generate(finalPrompt, selectedModel, messages);
 
-            const aiResponse = {
-                id: (Date.now() + 1).toString(),
-                text: res.data.text,
-                sender: 'ai',
-                ...(file && { fileRef: file.name }),
-                timestamp: new Date()
-            };
-            setMessages(prev => [...prev, aiResponse]);
+            if (res.data?.text) {
+                const aiResponse = {
+                    id: (Date.now() + 1).toString(),
+                    text: res.data.text,
+                    sender: 'ai',
+                    ...(file && { fileRef: file.name }),
+                    timestamp: new Date()
+                };
+                setMessages(prev => [...prev, aiResponse]);
 
-            // Save AI response to backend
-            if (currentChatId) {
-                await chatAPI.addMessage(currentChatId, aiResponse);
+                // Save AI response to backend
+                if (currentChatId) {
+                    await chatAPI.addMessage(currentChatId, aiResponse);
+                }
+            } else {
+                throw new Error('Empty response from AI');
             }
         } catch (error) {
             console.error("Error generating response:", error);
