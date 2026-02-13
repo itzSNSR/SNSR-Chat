@@ -44,7 +44,7 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    padding-bottom: 4px;
+    padding-bottom: 2px;
     position: relative;
 }
 
@@ -298,6 +298,11 @@
         min-height: 44px;
         padding: 10px 8px;
         line-height: 1.5;
+    }
+
+    .input-actions-left,
+    .input-actions-right {
+        padding-bottom: 0;
     }
 
     /* Touch-friendly buttons — 44px minimum */
