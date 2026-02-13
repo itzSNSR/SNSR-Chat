@@ -44,10 +44,8 @@ const Sidebar = ({
     const [showArchived, setShowArchived] = useState(false);
     const [activeMenuChatId, setActiveMenuChatId] = useState(null);
 
-    // Safety check for chatHistory
-    const safeChatHistory = Array.isArray(chatHistory) ? chatHistory : [];
-    const recentChats = safeChatHistory.filter(chat => !chat.isArchived);
-    const archivedChats = safeChatHistory.filter(chat => chat.isArchived);
+    const recentChats = chatHistory.filter(chat => !chat.isArchived);
+    const archivedChats = chatHistory.filter(chat => chat.isArchived);
 
     const toggleChatMenu = (e, chatId) => {
         e.stopPropagation();

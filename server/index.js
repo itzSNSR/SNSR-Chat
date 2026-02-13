@@ -25,7 +25,7 @@ app.use(cors({
 app.use(express.json());
 
 // Database Connection (Cached for Serverless)
-let cachedPromise = null;
+let isConnected = false;
 
 const connectDB = async () => {
     if (isConnected) return;
@@ -38,35 +38,15 @@ const connectDB = async () => {
         }
     }
 
-    if (!cachedPromise) {
-        const opts = {
-            bufferCommands: false, // Vital for serverless! Fail fast if no connection.
-        };
-
-        cachedPromise = mongoose.connect(process.env.MONGODB_URI, opts).then((mongoose) => {
-            isConnected = true;
-            console.log('✅ MongoDB Connected');
-            return mongoose;
-        }).catch((error) => {
-            console.error('❌ MongoDB Connection Error:', error);
-            cachedPromise = null; // Reset promise on failure
-            throw error;
-        });
-    }
-
     try {
-        await cachedPromise;
-    } catch (e) {
-        cachedPromise = null;
-        throw e;
+        await mongoose.connect(process.env.MONGODB_URI);
+        isConnected = true;
+        console.log('✅ MongoDB Connected');
+    } catch (error) {
+        console.error('❌ MongoDB Connection Error:', error);
+        throw error;
     }
 };
-
-// Routes that don't need DB
-app.use('/api/captcha', captchaRoutes);
-app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', message: 'SNSR AI Server Running' });
-});
 
 // Ensure DB connection on every request (essential for serverless)
 app.use(async (req, res, next) => {
@@ -79,11 +59,12 @@ app.use(async (req, res, next) => {
     }
 });
 
-// Routes that need DB
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/chats', chatRoutes);
 app.use('/api/gemini', geminiRoutes);
 app.use('/api/ocr', ocrRoutes);
+app.use('/api/captcha', captchaRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

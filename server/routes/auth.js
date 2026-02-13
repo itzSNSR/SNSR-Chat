@@ -1,10 +1,8 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
-import User from '../models/User.js';
-import { generateOTP, sendOTPEmail, sendPasswordResetEmail } from '../services/email.js';
+import { generateOTP, sendOTPEmail } from '../services/email.js';
 import { verifyCaptcha } from './captcha.js';
-import crypto from 'crypto';
 
 const router = express.Router();
 
@@ -162,8 +160,6 @@ router.post('/resend-otp', async (req, res) => {
         res.status(500).json({ error: 'Failed to resend OTP' });
     }
 });
-
-
 
 // Login
 router.post('/login', async (req, res) => {
