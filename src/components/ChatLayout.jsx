@@ -374,7 +374,7 @@ const ChatLayout = () => {
 
                     <div className="chat-area">
                         {messages.length === 0 ? (
-                            <WelcomeScreen onSuggestionClick={handleSendMessage} />
+                            <WelcomeScreen user={user} onSuggestionClick={handleSendMessage} />
                         ) : (
                             <div className="messages-list">
                                 {messages.map(msg => (

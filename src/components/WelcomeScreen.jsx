@@ -25,14 +25,14 @@ const suggestions = [
     }
 ];
 
-const WelcomeScreen = ({ onSuggestionClick }) => {
+const WelcomeScreen = ({ onSuggestionClick, user }) => {
     return (
         <div className="welcome-container">
             <div className="welcome-header">
                 <div className="logo-large">
                     <img src="/logo.svg" alt="SNSR AI" className="app-logo" />
                 </div>
-                <h1>Hi, Sabari Nadh</h1>
+                <h1>Hi, {user?.fullName || user?.username || 'Guest'}</h1>
                 <p>How can I help you today?</p>
             </div>
 
