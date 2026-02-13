@@ -49,3 +49,44 @@ export const sendOTPEmail = async (email, otp, fullName) => {
         return { success: false, error };
     }
 };
+
+// Send Password Reset OTP
+export const sendPasswordResetEmail = async (email, otp, fullName) => {
+    try {
+        const sendSmtpEmail = new brevo.SendSmtpEmail();
+
+        sendSmtpEmail.sender = { name: 'SNSR AI', email: 'sabarinadhmedia2006@gmail.com' };
+        sendSmtpEmail.to = [{ email: email, name: fullName }];
+        sendSmtpEmail.subject = 'Reset your SNSR AI password';
+        sendSmtpEmail.htmlContent = `
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="color: #6366f1; margin: 0;">✦ SNSR AI</h1>
+                </div>
+                <h2 style="color: #1e293b;">Password Reset Request 🔐</h2>
+                <p style="color: #475569; font-size: 16px;">
+                    Hello ${fullName},
+                </p>
+                <p style="color: #475569; font-size: 16px;">
+                    We received a request to reset your password. Use the code below to proceed:
+                </p>
+                <div style="background: linear-gradient(135deg, #f59e0b, #ef4444); padding: 20px; border-radius: 12px; text-align: center; margin: 30px 0;">
+                    <span style="color: white; font-size: 36px; font-weight: bold; letter-spacing: 8px;">${otp}</span>
+                </div>
+                <p style="color: #64748b; font-size: 14px;">
+                    This code expires in <strong>10 minutes</strong>.
+                </p>
+                <p style="color: #94a3b8; font-size: 12px; margin-top: 30px;">
+                    If you didn't request a password reset, you can safely ignore this email.
+                </p>
+            </div>
+        `;
+
+        const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
+        console.log('Password reset email sent via Brevo:', result.body?.messageId);
+        return { success: true, data: result };
+    } catch (error) {
+        console.error('Brevo email error:', error?.body || error);
+        return { success: false, error };
+    }
+};

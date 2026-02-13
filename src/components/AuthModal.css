@@ -466,3 +466,32 @@
     font-size: 0.9rem;
     text-align: center;
 }
+
+.forgot-password-link {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -8px;
+    margin-bottom: 8px;
+}
+
+.forgot-password-link button {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0;
+    transition: color var(--transition-fast);
+}
+
+.forgot-password-link button:hover {
+    color: var(--accent-primary);
+    text-decoration: underline;
+}
+
+.center-back {
+    display: block;
+    margin: var(--spacing-lg) auto 0;
+    text-align: center;
+    width: 100%;
+}
