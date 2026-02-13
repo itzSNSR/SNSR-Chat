@@ -48,6 +48,12 @@ const connectDB = async () => {
     }
 };
 
+// Routes that don't need DB
+app.use('/api/captcha', captchaRoutes);
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', message: 'SNSR AI Server Running' });
+});
+
 // Ensure DB connection on every request (essential for serverless)
 app.use(async (req, res, next) => {
     try {
@@ -59,12 +65,11 @@ app.use(async (req, res, next) => {
     }
 });
 
-// Routes
+// Routes that need DB
 app.use('/api/auth', authRoutes);
 app.use('/api/chats', chatRoutes);
 app.use('/api/gemini', geminiRoutes);
 app.use('/api/ocr', ocrRoutes);
-app.use('/api/captcha', captchaRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
