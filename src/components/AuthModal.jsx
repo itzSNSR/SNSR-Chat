@@ -35,8 +35,13 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
         setCaptchaAnswer('');
         try {
             const res = await captchaAPI.getChallenge();
-            setCaptchaQuestion(res.data.question);
-            setCaptchaToken(res.data.token);
+            if (res.data) {
+                setCaptchaQuestion(res.data.question);
+                setCaptchaToken(res.data.token);
+            } else {
+                setCaptchaQuestion('');
+                setCaptchaToken('');
+            }
         } catch {
             setCaptchaQuestion('');
             setCaptchaToken('');
@@ -113,8 +118,12 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
                     captchaToken: captchaToken
                 });
 
-                saveAuth(res.data.token, res.data.user);
-                onAuthSuccess(res.data.user);
+                if (res.data && res.data.user) {
+                    saveAuth(res.data.token, res.data.user);
+                    onAuthSuccess(res.data.user);
+                } else {
+                    throw new Error('Invalid server response');
+                }
             } else {
                 const res = await authAPI.signup({
                     fullName: formData.fullName,
@@ -159,10 +168,14 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
 
         try {
             const res = await authAPI.verifyOtp(pendingUser.userId, otpString);
-            saveAuth(res.data.token, res.data.user);
-            onAuthSuccess(res.data.user);
+            if (res.data && res.data.user) {
+                saveAuth(res.data.token, res.data.user);
+                onAuthSuccess(res.data.user);
+            } else {
+                throw new Error('Invalid server response');
+            }
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to verify OTP');
+            setError(err.response?.data?.error || err.message || 'Failed to verify OTP');
         } finally {
             setLoading(false);
         }
@@ -197,11 +210,11 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
 
         try {
             const res = await authAPI.forgotPassword(formData.email);
-            setSuccess(res.data.message);
+            setSuccess(res.data?.message || 'Code sent');
             setStep('forgot-reset');
             setOtp(['', '', '', '', '', '']); // Reset OTP inputs
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to send reset code');
+            setError(err.response?.data?.error || err.message || 'Failed to send reset code');
         } finally {
             setLoading(false);
         }
@@ -229,7 +242,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
             const res = await authAPI.resetPassword(formData.email, otpString, formData.password);
 
             // Success! Switch back to login
-            setSuccess(res.data.message);
+            setSuccess(res.data?.message || 'Password reset successful');
             setTimeout(() => {
                 setIsLogin(true);
                 setStep('form');
@@ -237,7 +250,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
                 setFormData(prev => ({ ...prev, password: '' }));
             }, 2000);
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to reset password');
+            setError(err.response?.data?.error || err.message || 'Failed to reset password');
         } finally {
             setLoading(false);
         }

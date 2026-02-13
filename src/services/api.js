@@ -19,6 +19,23 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+// Response interceptor to handle HTML responses (API 404/500 fallback)
+api.interceptors.response.use(
+    (response) => {
+        const contentType = response.headers['content-type'];
+        if (contentType && contentType.includes('text/html')) {
+            return Promise.reject(new Error('API unavailable (received HTML)'));
+        }
+        return response;
+    },
+    (error) => {
+        if (error.response && error.response.headers['content-type']?.includes('text/html')) {
+            error.message = 'API unavailable (received HTML)';
+        }
+        return Promise.reject(error);
+    }
+);
+
 // Auth APIs
 export const authAPI = {
     signup: (data) => api.post('/api/auth/signup', data),
@@ -77,8 +94,16 @@ export const saveAuth = (token, user) => {
 };
 
 export const getStoredUser = () => {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+    try {
+        const user = localStorage.getItem('user');
+        if (user === 'undefined' || user === 'null') return null;
+        return user ? JSON.parse(user) : null;
+    } catch (e) {
+        // If local storage is corrupted, clear it
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        return null;
+    }
 };
 
 export const isLoggedIn = () => {
