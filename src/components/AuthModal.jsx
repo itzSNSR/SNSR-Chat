@@ -45,6 +45,11 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
         }
     }, []);
 
+    // Clear OTP refs when step changes
+    useEffect(() => {
+        otpRefs.current = [];
+    }, [step]);
+
     // Load captcha when switching to login mode
     useEffect(() => {
         if (isLogin && step === 'form') {
@@ -539,7 +544,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
                     <>
                         <div className="modal-header">
                             <div className="modal-logo">
-                                <ShieldCheck size={32} />
+                                <KeyRound size={32} />
                             </div>
                             <h2>New Password</h2>
                             <p>Enter the code sent to <strong>{formData.email}</strong></p>
@@ -551,7 +556,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, canClose = true }) => {
                         <form onSubmit={handleResetPassword} className="auth-form">
                             <label className="input-label">Verification Code</label>
                             <div className="otp-inputs small-otp" onPaste={handleOtpPaste}>
-                                {otp.map((digit, index) => (
+                                {Array.isArray(otp) && otp.map((digit, index) => (
                                     <input
                                         key={index}
                                         ref={el => otpRefs.current[index] = el}
